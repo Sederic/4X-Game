@@ -94,12 +94,6 @@ public static class Pathfinder
                 {
                     continue;
                 }
-                // If neighbor is the goal, and it is reachable with the current movement points, just go there and terminate. 
-                if (neighbor == goal && neighbor.GetMovementCost() + costSoFar[current] <= movementPoints)
-                {
-                    cameFrom[neighbor] = current;
-                    break;
-                }
     
                 double newCost = costSoFar[current] + neighbor.GetMovementCost();
                 
@@ -148,6 +142,63 @@ public static class Pathfinder
         }
         else return null;
 
+    }
+    
+    public static List<Tuple<GameTile, int>> AStarWithoutLimit(GameTile start, GameTile goal)
+    {
+        Dictionary<GameTile, GameTile> cameFrom = new Dictionary<GameTile, GameTile>();
+        List<Tuple<GameTile, int>> path = new List<Tuple<GameTile, int>>();
+        Dictionary<GameTile, double> costSoFar = new Dictionary<GameTile, double>();
+        PriorityQueue<GameTile, double> frontier = new PriorityQueue<GameTile, double>();
+
+        costSoFar[start] = 0;
+        frontier.Enqueue(start, 0);
+
+        while (frontier.Count > 0)
+        {
+            GameTile current = frontier.Dequeue();
+            // We have a path to our destination.
+            if (current == goal)
+            {
+                break;
+            }
+            foreach (GameTile neighbor in current.GetNeighbors())
+            {
+                // Mountains are impassable. Void/null tiles shouldn't be considered.
+                if (neighbor == null || neighbor.GetTerrain() == 2 || neighbor.GetBiome() == 7 || neighbor.GetBiome() == 6)
+                {
+                    continue;
+                }
+    
+                double newCost = costSoFar[current] + neighbor.GetMovementCost();
+                
+                if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
+                {
+                    // We need to ensure that going to the neighbor doesn't exceed our movementpoints.
+                        costSoFar[neighbor] = newCost;
+                        double priority = newCost + Position.cost_distance(neighbor, goal);
+                        frontier.Enqueue(neighbor, priority);
+                        cameFrom[neighbor] = current;
+                }
+            }
+            // We run a check to see if the frontier is empty(meaning that the loop will terminate)
+            // If it is, it means we haven't teminated in any other way(movement points used up, found goal)
+            // It also means that no neighbours in this iteration were added to the frontier, and therefore do not form a valid path.
+            // Therefore, we can maintain a valid path by setting our goal to the last reached current.
+        }
+
+        // Reconstruct the path from goal to start
+        GameTile pathCurrent = goal;
+        if (cameFrom.ContainsKey(goal) || goal == start) // Ensure there's a valid path
+        {
+            while (pathCurrent != start)
+            {
+                path.Insert(0, new Tuple<GameTile, int>(pathCurrent, (int)costSoFar[pathCurrent]));
+                pathCurrent = cameFrom[pathCurrent];
+            }
+        }
+
+        return path;
     }
 
     public class PriorityQueue<TElement, TPriority>

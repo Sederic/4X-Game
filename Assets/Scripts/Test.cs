@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Random = UnityEngine.Random;
 
 public class Test : MonoBehaviour
 {
@@ -46,14 +47,48 @@ public class Test : MonoBehaviour
                 world.ModifyTileTerrain(new Point(30, y), 2);
             }
         }*/
+        for (double x = 0; x < world.GetLength(); x++)
+        {
+            for (int y = world.GetHeight()-1; y > 0; y--)
+            {
+                if ((Random.Range(1,6)==1) && (world.GetTile((int)x,y).GetBiome() != 7) && (world.GetTile((int)x,y).GetBiome() != 6))
+                {
+                    world.ModifyTileTerrain(new Point((int)x, y), 2);
+                }
+            }
+        }
         
-
+        // Debug.Log("Trying to reach 27,23 from 25,25 within 3 moves. Testing with movement point based early exits and without MP based early exits");
         List<GameTile> path = new List<GameTile>();
-        List<Tuple<GameTile, int>> list = Pathfinder.AStarWithLimit(world.GetTile(16, 15), world.GetTile(3, 16), 15);
+        List<GameTile> path2 = new List<GameTile>();
+        List<Tuple<GameTile, int>> list = Pathfinder.AStarWithLimit(world.GetTile(80, 25), world.GetTile(10, 23), 100);
+        List<Tuple<GameTile, int>> list2 = Pathfinder.AStarWithoutLimit(world.GetTile(25, 25), world.GetTile(80, 40));
+        if (list.Count != 0)
+        {
+            Debug.Log(list[^1].Item1.GetXPos() + "," + list[^1].Item1.GetYPos() + " " + "reached when factoring limit");
+        }
+        else
+        {
+            Debug.Log("A* with limit could not find a path, likely unreachable.");
+        }
+
+        if (list2.Count != 0)
+        {
+            Debug.Log(list2[^1].Item1.GetXPos() + "," + list2[^1].Item1.GetYPos() + " " + "reached when not factoring limit but took" + list2[^1].Item2 + "moves");
+        }
+        else
+        {
+            Debug.Log("A* without limit could not find a path, likely unreachable.");
+        }
+        
 
         foreach (Tuple<GameTile, int> t in list)
         {
             path.Add(t.Item1);
+        }
+        foreach (Tuple<GameTile, int> t in list2)
+        {
+            path2.Add(t.Item1);
         }
 
         for (int x = 0; x < world.GetLength(); x++)
@@ -122,7 +157,15 @@ public class Test : MonoBehaviour
                 {
                     tile.color = Color.blue;
                 }
-                
+                if (path2.Contains(world.GetTile(x, y)))
+                {
+                    tile.color = Color.red;
+                }
+
+                if (world.GetTile(x, y).GetTerrain() == 2)
+                {
+                    tile.color = Color.black;
+                }
                 tilemap.SetTile(new Vector3Int(y, x, 0), tile);
             }
         }
