@@ -14,7 +14,8 @@ public class WorldGenerator : MonoBehaviour
     public World GenerateWorld(int length, int height, int continents)
     {
         rand.InitState();
-        rand = new Random(1);
+        int seed = UnityEngine.Random.Range(0, int.MaxValue);
+        rand = new Random((uint) seed);
         _continents = continents;
         World world = new World(length, height);
         world.FillEmptyWorld(7);
@@ -582,16 +583,11 @@ public class WorldGenerator : MonoBehaviour
         // Return the desired Biome type to match.
         int ChangeBiome()
         {
-            int newBiome;
-
             if (totalPlains < totalGrass)
             {
                 return 1;
             }
-            else
-            {
-                return 2;
-            }
+            return 2;
         }
         
         
@@ -601,20 +597,19 @@ public class WorldGenerator : MonoBehaviour
     private void DetermineTerrain(World world)
     {
         // To be implemented
-        int randomX = rand.NextInt(world.GetLength()/4, world.GetLength() * 3/4);
+        int randomX = rand.NextInt(world.GetLength()/6, world.GetLength() * 5/6);
         int randomY = rand.NextInt(0, world.GetHeight());
-        WorldGenWalker[] walkers = new WorldGenWalker[rand.NextInt(3, 10)];
-        int mountainSize = 0;
-        int desiredMountainSize;
+        WorldGenWalker[] walkers = new WorldGenWalker[rand.NextInt(30, 40)];
+        int longMountainCount = 0;
         for (int i = 0; i < walkers.Length; i++)
         {
             randomX = rand.NextInt(world.GetLength()/4, world.GetLength() * 3/4);
             randomY = rand.NextInt(0, world.GetHeight());
             walkers[i] = new WorldGenWalker(world, world.GetTile(randomX, randomY), "terrain", 0, 2, rand);
-            Debug.Log("x = " + randomX + ", y =" + randomY);
         }
         foreach (WorldGenWalker walker in walkers)
         {
+            int mountainSize = 0;
             if (rand.NextInt(0, 2) == 0)
             {
                 walker.tooFarUp = true;
@@ -632,7 +627,11 @@ public class WorldGenerator : MonoBehaviour
                 walker.tooFarRight = true;
             }
 
-            desiredMountainSize = rand.NextInt(100, 150);//random numbers, can be adjusted
+            int desiredMountainSize = rand.NextInt(3, 10);//random numbers, can be adjusted
+            if (longMountainCount < rand.NextInt(3, 7))
+            {
+                desiredMountainSize+=rand.NextInt(20, 50);
+            }
             while (mountainSize < desiredMountainSize)
             {
                 if (walker.move())
@@ -640,6 +639,8 @@ public class WorldGenerator : MonoBehaviour
                     mountainSize++;
                 }
             }
+
+            longMountainCount++;
         }
     }
     
