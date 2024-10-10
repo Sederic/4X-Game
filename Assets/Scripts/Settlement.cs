@@ -18,6 +18,7 @@ public class Settlement : MonoBehaviour
     private List<CityProject> _projects;
     private CityProject _currentCityProject;
     private GameTile _gameTile;
+    private int _Tier; // Settlement tier. 0 = Village, 1 = Town, 2 = City
     
     // Constants
     private const int FoodSurplusRequirement = 15;
@@ -38,6 +39,9 @@ public class Settlement : MonoBehaviour
     {
         // Update Settlement Yields
         CalculateYields();
+
+        // Update Settlement Tier
+        CalculateTier();
 
         // Add current Production per turn to the City Project's progress
         _currentCityProject.AddToProgress(_yieldsPt[Production]);
@@ -65,8 +69,10 @@ public class Settlement : MonoBehaviour
         _territory = StartingTerritory(gameTile);
         _workedTiles = new List<GameTile>();
         _workedTiles.Add(gameTile);
+        _projects = new List<CityProject>();
+        _population = 1;
+        _Tier = 0;
         CalculateYields();
-
     }
 
     /* Adds all adjacent Tiles to territory */
@@ -107,16 +113,106 @@ public class Settlement : MonoBehaviour
         }
     }
 
+    /* Calculate a settlement's tier */
+    private void CalculateTier()
+    {
+        if (_population <= 3)
+        {
+            _Tier = 0;
+        }
+        else if (_population <= 7)
+        {
+            _Tier = 1;
+        }
+        else
+        {
+            _Tier = 2;
+        }
+    }
+
     private void CalculateFoodSurplus()
     {
         
     }
-    
+
+    /* Add a city project to settlement */
+    public void AddProject(int name, int cost)
+    {
+        _projects.Add(new CityProject(name, cost));
+    }
+
+    /* Switch the project the settlement is working on */
+    public void SwitchProject(int index)
+    {
+        _currentCityProject = _projects[index];
+    }
+
     // Getter Methods
     public int[] GetYieldsPt()
     {
         return _yieldsPt;
     }
+
+    public string GetName()
+    {
+        return _name;
+    }
+
+    public Civilization GetCivilization()
+    {
+        return _civilization;
+    }
+
+    public int GetPopulation()
+    {
+        return _population;
+    }
+
+    public List<GameTile> GetTerritory()
+    {
+        return _territory;
+    }
+
+    public List<GameTile> GetWorkedTiles()
+    {
+        return _workedTiles;
+    }
     
+    public int GetFoodSurplus()
+    {
+        return _foodSurplus;
+    }
     
+    public int GetCombatStrength()
+    {
+        return _combatStrength;
+    }
+    
+    public List<Building> GetBuildings()
+    {
+        return _buildings;
+    }
+    
+    public List<CityProject> GetProjects()
+    {
+        return _projects;
+    }
+    
+    public CityProject GetCurrentCityProject()
+    {
+        return _currentCityProject;
+    }
+    
+    public GameTile GetGameTile()
+    {
+        return _gameTile;
+    }
+    
+    public int GetTier()
+    {
+        return _Tier;
+    }
+
 }
+    
+    

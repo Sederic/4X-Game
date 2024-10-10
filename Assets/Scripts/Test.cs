@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
@@ -9,12 +10,23 @@ public class Test : MonoBehaviour
 {
     public Tilemap tilemap;
     public Tile tile;
-    public Tile praireTile;
+    public Tile prairieTile;
+    public Tile grassTile;
     public Tile tundraTile;
+    public Tile desertTile;
     public Tile oceanTile;
     public Tile coastTile;
     public Tile snowTile;
-
+    public Tile prairieHillsTile;
+    public Tile grassHillsTile;
+    public Tile tundraHillsTile;
+    public Tile desertHillsTile;
+    public Tile snowHillsTile;
+    public Tile prairieMountainsTile;
+    public Tile grassMountainsTile;
+    public Tile tundraMountainsTile;
+    public Tile desertMountainsTile;
+    public Tile snowMountainsTile;
 
     // Start is called before the first frame update
     void Start()
@@ -24,7 +36,9 @@ public class Test : MonoBehaviour
 
     private void TestWorldGeneration()
     {
-        World gameWorld = new WorldGenerator().GenerateWorld(100, 50, 2);
+        World gameWorld = new WorldGenerator().GenerateWorld(100, 50,1);
+        //World gameWorld = new WorldGenerator().GenerateWorld(100, 50, 2);
+
         DrawTilemap(gameWorld);
         gameWorld.SetTileAdjacency();
         gameWorld.TestTileAdjacency(2, 0);
@@ -95,78 +109,134 @@ public class Test : MonoBehaviour
         {
             for (int y = 0; y < world.GetHeight(); y++)
             {
+                // Plains
                 if (world.GetTile(x, y).GetBiome() == 1)
                 {
-                    tile.color = new Color32(145, 158, 11, 255);
+                    // Hills
+                    if (world.GetTile(x, y).GetTerrain() == 1)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), prairieHillsTile);
+                    } 
+                    // Mountain
+                    else if (world.GetTile(x, y).GetTerrain() == 2)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), prairieMountainsTile);
+                    }
+                    // Flat 
+                    else
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), prairieTile);
+                    }
+
+                    //tile.color = new Color32(145, 158, 11, 255);
 
                 }
+                // Grassland
                 else if (world.GetTile(x, y).GetBiome() == 2)
                 {
-                    tile.color = new Color32(92, 128, 82, 255);
+                    // Hills
+                    if (world.GetTile(x, y).GetTerrain() == 1)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), grassHillsTile);
+                    } 
+                    // Mountain
+                    else if (world.GetTile(x, y).GetTerrain() == 2)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), grassMountainsTile);
+                    }
+                    // Flat 
+                    else
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), grassTile);
+                    }
+                    
+                    //tile.color = new Color32(92, 128, 82, 255);
                 }
+                // Tundra
                 else if (world.GetTile(x, y).GetBiome() == 3)
                 {
-                    tile.color = new Color32(144, 158, 141, 255);
+                    // Hills
+                    if (world.GetTile(x, y).GetTerrain() == 1)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), tundraHillsTile);
+                    } 
+                    // Mountain
+                    else if (world.GetTile(x, y).GetTerrain() == 2)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), tundraMountainsTile);
+                    }
+                    // Flat 
+                    else
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), tundraTile);
+                    }
+                    
+                    //tile.color = new Color32(144, 158, 141, 255);
                 }
+                // Desert
                 else if (world.GetTile(x, y).GetBiome() == 4)
                 {
-                    tile.color = new Color32(255, 217, 112, 255);
+                    // Hills
+                    if (world.GetTile(x, y).GetTerrain() == 1)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), desertHillsTile);
+                    } 
+                    // Mountain
+                    else if (world.GetTile(x, y).GetTerrain() == 2)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), desertMountainsTile);
+                    }
+                    // Flat 
+                    else
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), desertTile);
+                    }
+                    
+                    //tile.color = new Color32(255, 217, 112, 255);
                 }
-                else if (world.GetTile(x, y).GetBiome() == 5 || world.GetTile(x, y).GetBiome() == 0)
+                // Snow
+                else if (world.GetTile(x, y).GetBiome() == 5)
                 {
-                    tile.color = Color.white;
+                    // Hills
+                    if (world.GetTile(x, y).GetTerrain() == 1)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), snowHillsTile);
+                    } 
+                    // Mountain
+                    else if (world.GetTile(x, y).GetTerrain() == 2)
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), snowMountainsTile);
+                    }
+                    // Flat 
+                    else
+                    {
+                        tilemap.SetTile(new Vector3Int(y, x, 0), snowTile);
+                    }
+                    
+                    //tile.color = Color.white;
                 }
                 else if (world.GetTile(x, y).GetBiome() == 6)
                 {
-                    tile.color = new Color32(110, 187, 255, 255);
+                    tilemap.SetTile(new Vector3Int(y, x, 0), coastTile);
+                    //tile.color = new Color32(110, 187, 255, 255);
                 }
                 else if (world.GetTile(x, y).GetBiome() == 7)
                 {
-                    tile.color = new Color32(20, 102, 184, 255);
-                }
-
-
-
-
-
-
-                // Tile Texture - commented out for easier testing for now
-                /*if (world.GetTile(x, y).GetBiome() == 1)
-                {
-                    tilemap.SetTile(new Vector3Int(y, x, 0), praireTile);
-                }
-                else if (world.GetTile(x, y).GetBiome() == 3)
-                {
-                    tilemap.SetTile(new Vector3Int(y, x, 0), tundraTile);
-                } else if (world.GetTile(x, y).GetBiome() == 5)
-                {
-                    tilemap.SetTile(new Vector3Int(y, x, 0), snowTile);
-                } else if (world.GetTile(x, y).GetBiome() == 6)
-                {
-                    tilemap.SetTile(new Vector3Int(y, x, 0), coastTile);
-                } else if (world.GetTile(x, y).GetBiome() == 7)
-                {
                     tilemap.SetTile(new Vector3Int(y, x, 0), oceanTile);
-                }
-                else
-                {
-                    tilemap.SetTile(new Vector3Int(y, x, 0), tile);
-                }*/
-                    
-                if (path.Contains(world.GetTile(x, y)))
-                {
-                    tile.color = Color.blue;
-                }
-                if (path2.Contains(world.GetTile(x, y)))
-                {
-                    tile.color = Color.red;
+                    //tile.color = new Color32(20, 102, 184, 255);
                 }
 
-                if (world.GetTile(x, y).GetTerrain() == 2)
+                
+                
+                /*if (world.GetTile(x, y).GetTerrain() == 2)
                 {
-                    tile.color = Color.black;
-                }
-                tilemap.SetTile(new Vector3Int(y, x, 0), tile);
+                    tile.color = new Color32(99, 73, 43, 200);
+                } else if (world.GetTile(x, y).GetTerrain() == 1)
+                {
+                    tile.color = new Color32(191, 140, 0, 100);
+                }*/
+                
+                //tilemap.SetTile(new Vector3Int(y, x, 0), tile);
             }
         }
     }

@@ -205,6 +205,22 @@ public class World
     }
     
     // Tile Modification Methods
+
+    public void ModifyTile(String tileProperty, Point point, int value)
+    {
+        if (tileProperty == "biome")
+        {
+            ModifyTileBiome(point, value);
+        }
+        else if (tileProperty == "terrain")
+        {
+            ModifyTileTerrain(point, value);
+        } else if (tileProperty == "feature")
+        {
+            ModifyTileFeature(point, value);
+        }
+    }
+
     public void ModifyTileBiome(Point point, int biome)
     {
         _world[point.x, point.y].SetBiome(biome); 
