@@ -37,7 +37,7 @@ public class Test : MonoBehaviour
 
     private void TestWorldGeneration()
     {
-        World gameWorld = new WorldGenerator().GenerateWorld(100, 50,2);
+        World gameWorld = new WorldGenerator().GenerateWorld(100, 50,1);
         //World gameWorld = new WorldGenerator().GenerateWorld(100, 50, 2);
 
         DrawTilemap(gameWorld);
@@ -231,7 +231,7 @@ public class Test : MonoBehaviour
                                 riverRotation = Quaternion.Euler(0f, 0f, 0f);
                             }
                             
-                            Instantiate(riverSegment, riverPosition, riverRotation );
+                            Instantiate(riverSegment, riverPosition, riverRotation);
                         }
                     }
                 }

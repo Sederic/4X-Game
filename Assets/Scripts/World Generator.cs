@@ -267,7 +267,40 @@ public class WorldGenerator : MonoBehaviour
                     }
                 }
                 break;
-            case 3: // Three Continents
+            case 3: // Inland Sea
+                
+                // FIll the world with land
+                
+                // Pick out a random (x,y) spot to start my ocean. (should be somewhat centered)
+                Point startPoint = new Point(50, 25);
+                
+                Queue<Point> newQueue = new Queue<Point>();
+                
+                newQueue.Enqueue(startPoint);
+                
+                
+                // Until Queue is mepty
+                while (newQueue.Count > 0)
+                {
+                    GameTile currentTile = world.GetTile(newQueue.Dequeue());
+                    
+                    int probability = _random.NextInt(0, 100);
+
+                    // have a random chance to spread to neighbors
+                    foreach (GameTile neighbor in currentTile.GetNeighbors())
+                    {
+                        if (neighbor is not null && probability > 50 && neighbor.IsLand())
+                        {
+                            newQueue.Enqueue(new Point(neighbor.GetXPos(), neighbor.GetYPos()));
+                            neighbor.SetFeature(1);
+                        }
+                    }
+                }
+                
+                
+                
+                
+                
                 break;
         }
         DetermineBiomes(world);
@@ -1301,7 +1334,9 @@ public class WorldGenerator : MonoBehaviour
     /* Determine the features on Tiles. */
     private void DetermineFeatures(World world)
     {
-        
+        GameTile currTile = new GameTile(1, 1, 1, 1);
+
+        currTile.IsLand();
     }
 
     /* Determine the Resources and Resource spread across the game world.  */
