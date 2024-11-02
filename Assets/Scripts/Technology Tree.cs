@@ -1,14 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
-public class TechnologyTree : MonoBehaviour
+[System.Serializable]
+public class TechnologyTree 
 {
-
-    private Civilization _civilization; // Owner
-    private List<Technology> _researchable;
-    private List<Technology> _researched;
-    private Technology _currentlyResearching;
+    [JsonProperty]
+    public List<Technology> _researchable;
+    [JsonProperty]
+    public List<Technology> _researched;
+    [JsonProperty]
+    public Technology _currentlyResearching;
 
     // Add given science to the currently selected technology
     public void AddToProgress(int science)

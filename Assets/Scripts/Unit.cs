@@ -1,25 +1,43 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
-public class Unit
+[System.Serializable]
+public class Unit : ISerialization
 {
     // Instance Properties
+    [JsonProperty]
     private string _name; // The Unit's name.
+    [JsonProperty]
     private int _health; // A Unit's current Health Points (Default of 100)
+    [JsonProperty]
     private int _movementPoints; // A Unit's current Movement Points per turn.
+    [JsonProperty]
     private int _currentMovementPoints; // A Unit's remaining movement points this turn.
+    [JsonProperty]
     private int _combatStrength; // A Unit's base Combat Strength Stat - used to determine Attack Damage and Defense Damage.
+    [JsonProperty]
     private int _supplies; // A Unit's current Supplies stat - Determines how many turns it can stay out of your territory before taking damage.
+    [JsonProperty]
     private int _attackRange; // The range of Tiles a Unit can attack from. (Melee: 0, Ranged: 1 - X).
+    [JsonProperty]
     private int _experience; // A Unit's current XP. Needs X amount for a Promotion.
+    [JsonProperty]
     private bool _hasOrder; // Determines whether a Unit has already been given an order for this turn.
+    [JsonProperty]
     private bool _exhausted; // Determines if a Unit still has moves to make this turn.
+    [JsonProperty]
     private bool _fortified; // Determines if a Unit was ordered to Fortify this turn.
-    private GameTile _gameTile; //The Tile this Unit is on. 
-    private Civilization _civilization; // The Civilization that owns this Unit.
-    private bool[] _promotions; // Promotions are Unit powers/abilities - Array index determines whether a promotion/power has been unlocked. WILL BE REDONE INTO A NODE TREE LATER
+    [JsonProperty]
+    private List<Promotion> _promotions; // Unlocked Promotions
+    [JsonProperty]
+    public Point _position;
+    
+    // References
+    public GameTile _gameTile; //The Tile this Unit is on. 
+    public Civilization _civilization; // The Civilization that owns this Unit.
 
     // Constants
     private const int Zero = 0;
@@ -43,17 +61,10 @@ public class Unit
         _fortified = false;
         _gameTile = null;
         _civilization = null;
-        _promotions = new bool[TotalPromotions]; // No Promotions (booleans are initialized to False)
+        _promotions = new List<Promotion>();
     }
-
-    private void Start()
-    {
-        // Listen to GameManager OnTurnEnd event
-        GameManager.Instance.OnTurnEnd += Instance_OnTurnEnd;
-    }
-
-    // End the turn
-    private void Instance_OnTurnEnd(object sender, System.EventArgs e)
+    
+    public void OnTurnEnd()
     {
         if (_fortified)
         {
@@ -65,8 +76,15 @@ public class Unit
         _currentMovementPoints = _movementPoints;
     }
 
-    // Public methods
-
+    public void UpdateUnit()
+    {
+        if (_currentMovementPoints <= 0)
+        {
+            _exhausted = true;
+            _hasOrder = true;
+        }
+    }
+    
     /* Move a Unit across Tiles */
     public void Move(GameTile target)
     {
@@ -82,22 +100,8 @@ public class Unit
         Debug.Log("Ended at" + _gameTile.GetXPos() +  _gameTile.GetYPos());
         Debug.Log("Was trying to arrive at" + target.GetXPos() +  target.GetYPos());
     }
-
-    /* Returns all the possible Tiles that this Unity can move to.
-      Use _gameTile
-      Check _currentMovementPoints
-      Connect with move so that the Move(target) checks if target is  PossibleMoves()
-     */
-    public GameTile[] PossibleMoves()
-    {
-        // To be implemented
-        GameTile[] possibleTiles = new GameTile[TotalPromotions];
-
-
-        return possibleTiles;
-    }
     
-    /* Move a Unit to one of it's adjacent tiles */
+    /* Move a Unit to one of its adjacent tiles */
     public void MoveOneTile(GameTile nextGameTile)
     {
         if (nextGameTile.GetMovementCost() <= GetMovementPoints() && IsExhausted()) // Check if the Unit has enough MP and isn't exhausted
@@ -106,9 +110,8 @@ public class Unit
             SetMovementPoints(GetMovementPoints() - _gameTile.GetMovementCost()); // Reduce Unit's MP by tile's MC
         }
     }
-
     
-    /* Attack another Unit */
+    /* Attack a Unit */
     public void Attack(Unit target)
     {
         int unitStrength = GetCombatStrength(); // Unit's base Combat Strength
@@ -132,17 +135,11 @@ public class Unit
         }
     }
 
-    /* Attack another Settlement */
+    /* Attack a Settlement */
     public void Attack(Settlement target)
     {
         // To be implemented
     }
-    
-    // Private Methods
-    
-    
-    
-    //Setter Methods
     public void SetName(string name)
     {
         _name = name;
@@ -150,6 +147,11 @@ public class Unit
     public void SetHealth(int health)
     {
         _health = health;
+    }
+
+    public void Damage(int damage)
+    {
+        _health -= damage;
     }
 
     public void SetMovementPoints(int movementPoints)
@@ -195,12 +197,6 @@ public class Unit
     public void SetCivilization(Civilization civilization)
     {
         _civilization = civilization;
-    }
-
-    public void SetPromotions(bool[] promotions)
-    {
-        // Will need to add new promotions without removing previous ones
-        _promotions = promotions;
     }
     
     // Getter Methods
@@ -254,10 +250,31 @@ public class Unit
     {
         return _gameTile;
     }
-    
-    public bool[] GetPromotions()
+
+    public void StageForSerialization()
     {
-        return _promotions;
+        StageCurrentTile();
+
+        // Turn the current Tile into a Point (location)
+        void StageCurrentTile()
+        {
+            _position = new Point(_gameTile.GetXPos(), _gameTile.GetYPos());
+            _gameTile = null;
+        }
+        
+        // Set its owner to null (this will be restored by the Civilization)
+        _civilization = null;
     }
-    
+
+    public void RestoreAfterDeserialization(Game game)
+    {
+        RestoreCurrentTile();
+
+        // Restore this Unit, and it's Tile's references to each other.
+        void RestoreCurrentTile()
+        {
+            _gameTile = game.world.GetTile(_position);
+            _gameTile.SetUnit(this);
+        }
+    }
 }

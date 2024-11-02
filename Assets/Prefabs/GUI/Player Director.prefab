@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3092712236924463801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9175992913147886882}
+  - component: {fileID: 6275797788386788270}
+  m_Layer: 0
+  m_Name: Player Director
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9175992913147886882
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3092712236924463801}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 592.1574, y: 286.77594, z: -2.2000077}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6275797788386788270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3092712236924463801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b43c1e1bccc248c42bcc15a4c1f1dd36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gm: {fileID: 0}
+  baseTilemap: {fileID: 0}
+  terrainTilemap: {fileID: 0}
+  featureTilemap: {fileID: 0}
+  unitTilemap: {fileID: 0}
+  tile: {fileID: 11400000, guid: 6dc6f9350229dc44fba6e7e57417cb10, type: 2}
+  prairieTile: {fileID: 11400000, guid: 27b1ce3b55e8ee448ba52b1f59f01dac, type: 2}
+  grassTile: {fileID: 11400000, guid: 199f0a7142903de44bb71ce1edda0ebf, type: 2}
+  tundraTile: {fileID: 11400000, guid: 25b740eec3e06434c89d432169b8ec84, type: 2}
+  desertTile: {fileID: 11400000, guid: 2a03dea880a66a742843883a7aee3862, type: 2}
+  oceanTile: {fileID: 11400000, guid: 2ce6c4fc643286247bb8b2c4915f5de3, type: 2}
+  coastTile: {fileID: 11400000, guid: 7b8d4326a3f00584da0867ed0e40b1db, type: 2}
+  snowTile: {fileID: 11400000, guid: 801de112595f9e24e8a05a150c9eebd4, type: 2}
+  lakeTile: {fileID: 11400000, guid: 476895a79033a684880e07131f346e8f, type: 2}
+  prairieHillsTile: {fileID: 11400000, guid: e7c50492582db4a4db16f003067171a8, type: 2}
+  grassHillsTile: {fileID: 11400000, guid: 99f10817582e4154ea344c1ba79e4890, type: 2}
+  tundraHillsTile: {fileID: 11400000, guid: d5762e35721d6c7409c338a3982d7331, type: 2}
+  desertHillsTile: {fileID: 11400000, guid: 23b6a5d231c68bb448e6753d6e3b444d, type: 2}
+  snowHillsTile: {fileID: 11400000, guid: 801de112595f9e24e8a05a150c9eebd4, type: 2}
+  woodsTile: {fileID: 11400000, guid: 7bf481a80da13274a885d345b5637b36, type: 2}
+  floodplainsTile: {fileID: 11400000, guid: 7972f8e666fe0504d990e66a70710d47, type: 2}
+  marshTile: {fileID: 11400000, guid: 60b5e8bc972ae234bad2fa1199acf425, type: 2}
+  rainforestTile: {fileID: 11400000, guid: d808d8c5d6ffc224d82969bdf11c041d, type: 2}
+  oasisTile: {fileID: 11400000, guid: 052447c804702a6458d014fcc7e9bb86, type: 2}
+  mountain: {fileID: 11400000, guid: 45ff8b2c159ce8241a5df6055779047d, type: 2}
+  riversParent: {fileID: 0}
+  riverSegment: {fileID: 7700684974192715068, guid: 5ee1d19087010834ea13908e3fde1750, type: 3}
+  village: {fileID: 11400000, guid: b2abd4511315fbe4a8fceb093144c256, type: 2}
+  warrior: {fileID: 11400000, guid: d1800a3c292ef2b459ce77d97399bc54, type: 2}
