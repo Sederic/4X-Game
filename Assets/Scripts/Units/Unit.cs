@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 [System.Serializable]
-public abstract class Unit : ISerialization
+public class Unit : ISerialization
 {
     // Instance Properties
     [JsonProperty] public string _name; // The Unit's name.
@@ -26,7 +26,11 @@ public abstract class Unit : ISerialization
     public List<Point> possible_moves;
     
     // References
-    public GameTile _gameTile; //The Tile this Unit is on. 
+    [JsonIgnore]
+    public GameTile _gameTile; //The Tile this Unit is on.
+    [JsonProperty("GameTileUID")]
+    private int? _gameTileUID;
+    [JsonIgnore]
     public Civilization _civilization; // The Civilization that owns this Unit.
 
     // Constants
@@ -172,22 +176,27 @@ public abstract class Unit : ISerialization
         void StageCurrentTile()
         {
             _position = new Point(_gameTile.GetXPos(), _gameTile.GetYPos());
-            _gameTile = null;
+            // _gameTile = null;
         }
         
         // Set its owner to null (this will be restored by the Civilization)
-        _civilization = null;
+        // _civilization = null;
+
+        _gameTileUID = (_gameTile is null) ? null : _gameTile.UID;
     }
 
-    public void RestoreAfterDeserialization(Game game)
+    public void RestoreAfterDeserialization(GameManager gameManager)
     {
-        RestoreCurrentTile();
+        _gameTile = (_gameTileUID is null) ? null : GameTile.GetTileByUID((int)_gameTileUID);
+        _gameTile.SetUnit(this);
 
-        // Restore this Unit, and it's Tile's references to each other.
-        void RestoreCurrentTile()
-        {
-            _gameTile = game.world.GetTile(_position);
-            _gameTile.SetUnit(this);
-        }
+        // RestoreCurrentTile();
+
+        // // Restore this Unit, and it's Tile's references to each other.
+        // void RestoreCurrentTile()
+        // {
+        //     _gameTile = game.world.GetTile(_position);
+        //     _gameTile.SetUnit(this);
+        // }
     }
 }

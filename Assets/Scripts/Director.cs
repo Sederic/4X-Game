@@ -344,6 +344,32 @@ public class Director : MonoBehaviour
     // Load Main Menu Scene
     public void QuitToMainMenu()
     {
+        // SceneManager.UnloadSceneAsync(1);
+
+        // // Clear all Tilemaps
+        // baseTilemap.ClearAllTiles();
+        // hillsTilemap.ClearAllTiles();
+        // mountainTilemap.ClearAllTiles();
+        // featureTilemap.ClearAllTiles();
+        // shadingTilemap.ClearAllTiles();
+        // visibilityTilemap.ClearAllTiles();
+
+        // // Clear dictionaries or any tracking objects
+        // settlementUIs.Clear();
+        // units.Clear();
+        // highlightedTiles.Clear();
+        // visibleTiles.Clear();
+
+        // // Disable unnecessary objects
+        // menuCanvas.SetActive(false);
+        // guiCanvas.SetActive(false);
+        // saveCanvas.SetActive(false);
+        // unitWindowCanvas.SetActive(false);
+        // settlementWindowCanvas.SetActive(false);
+
+        // // Clear global/static variables for garbage collection
+        GameTile.ClearGameTileRegistry();
+
         SceneManager.LoadScene(0);
     }
     

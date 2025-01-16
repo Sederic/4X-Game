@@ -1,4 +1,6 @@
 using Newtonsoft.Json;
+using UnityEngine;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class GameTile : ISerialization
@@ -45,7 +47,12 @@ public class GameTile : ISerialization
              7 - Fishing Boats
     */
 
+    private static int _nextUID = 1; // TODO: NOT THREAD SAFE
+
     // Instance Attributes
+    [JsonProperty]
+    public int UID { get; private set; }
+
     [JsonProperty]
     private int _xPos; // The Tile's X Position on a 2D Array
     [JsonProperty]
@@ -62,8 +69,10 @@ public class GameTile : ISerialization
     private int _improvement; // The Tile Improvement on this Tile or 0 for No Improvement. CHECK ID INDEX ABOVE^
     [JsonProperty]
     private int _mc; // Movement cost - the amount of Movement Points a Unit must spend to move unto that Tile.
-    [JsonProperty]
-    private GameTile[] _neighbors; // Adjacent Tiles to these tiles. Index corresponds to Edge assuming flat top/bottom hexagons. Flat Top is 0, Flat Bottom is 3, Right sides are 1,2, Left Sides are 3,4.
+    [JsonIgnore]
+    private GameTile?[] _neighbors; // Adjacent Tiles to these tiles. Index corresponds to Edge assuming flat top/bottom hexagons. Flat Top is 0, Flat Bottom is 3, Right sides are 1,2, Left Sides are 3,4.
+    [JsonProperty] // Serialized list of neighbor UIDs
+    private List<int?> _neighborUIDs;
     [JsonProperty]
     private bool[] _riverEdges; // Are the Tile edges Adjacent to a river? -> [0,1,2,3,4,5] Represent edges on a hexagon starting from the Top moving clockwise.
     [JsonProperty]
@@ -82,11 +91,22 @@ public class GameTile : ISerialization
     private const int Zero = 0;
     private const int TileEdges = 6;
 
+    // Static map for UID-to-GameTile lookup
+    private static Dictionary<int, GameTile> _gameTileRegistry = new Dictionary<int, GameTile>();
+    public static void SetGameTileRegistry(int uid, GameTile gameTile) { _gameTileRegistry[uid] = gameTile; }
+    public static void ClearGameTileRegistry() { _gameTileRegistry = new Dictionary<int, GameTile>(); }
+
     // Class Methods
+    public GameTile() {
+    }
 
     /* Natural Tile Constructor - Only Biome, Terrain, Feature, and Resource. (Good for world gen) */
     public GameTile(int biome, int terrain, int feature, int resource)
     {
+        UID = _nextUID++;
+        _neighborUIDs = new List<int?>();
+        _gameTileRegistry[UID] = this;
+
         _biome = biome;
         _terrain = terrain;
         _feature = feature;
@@ -105,6 +125,10 @@ public class GameTile : ISerialization
     public GameTile(int biome, int terrain, int feature, int resource, int tileImprovement, Unit unit,
         Settlement settlement)
     {
+        UID = _nextUID++;
+        _neighborUIDs = new List<int?>();
+        _gameTileRegistry[UID] = this;
+
         _biome = biome;
         _terrain = terrain;
         _feature = feature;
@@ -536,20 +560,30 @@ public class GameTile : ISerialization
         return false;
     }
 
+    public static GameTile GetTileByUID(int uid) { return _gameTileRegistry[uid]; }
+
     public void StageForSerialization()
     {
         // This is reset by world's set adjacency
-        _neighbors = null;
+        _neighborUIDs.Clear();
+        for (int i=0; i<TileEdges; i++) {
+            _neighborUIDs.Add(_neighbors[i]?.UID);
+        }
 
         // Civilization's will hold Units and Settlements
         _settlement = null;
         _unit = null;
     }
 
-    public void RestoreAfterDeserialization(Game game)
+    public void RestoreAfterDeserialization(GameManager gameManager)
     {
         // Doesn't need to be Restored
         // Settlements and Units will give this Tile it's reference back
+        _neighbors = new GameTile[TileEdges];
+        for (int i=0; i<TileEdges; i++) {
+            int? uid = _neighborUIDs[i];
+            _neighbors[i] = (uid is null) ? null : _gameTileRegistry[(int)uid];
+        }
     }
 
     public bool ObstructsVision()

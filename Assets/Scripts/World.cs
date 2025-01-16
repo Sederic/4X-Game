@@ -16,7 +16,7 @@ public class World : ISerialization
     [JsonProperty]
     private int _height;
     [JsonProperty]
-    private GameTile[,] _world; // 2D Array of Tiles
+    private GameTile[,] _world;
     [JsonProperty]
     public List<Point> spawnPoints;
     
@@ -26,6 +26,7 @@ public class World : ISerialization
     // Class Methods
     
     /* World Constructor */
+    public World() {}
     public World(int length, int height)
     {
         // Length must be odd in order to connect world horizontally.
@@ -153,10 +154,21 @@ public class World : ISerialization
         }
     }
 
-    public void RestoreAfterDeserialization(Game game)
+    public void RestoreAfterDeserialization(GameManager gameManager)
     {
         // Set GameTile neighbor properties back to normal.
-        game.world.SetTileAdjacency();
+        // gameManager.game.world.SetTileAdjacency();
+
+        for (int x = 0; x < _length; x++) {
+            for (int y = 0; y < _height; y++) {
+                GameTile.SetGameTileRegistry(_world[x,y].UID, _world[x, y]);
+            }
+        }
+        for (int x = 0; x < _length; x++) {
+            for (int y = 0; y < _height; y++) {
+                _world[x, y].RestoreAfterDeserialization(gameManager);
+            }
+        }
     }
 
     /* Print the world to console. (Bad way to test but will do for now) */

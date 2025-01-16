@@ -9,7 +9,7 @@ public class Civilization : ISerialization
 {
     // NPC or Player
     [JsonProperty] public bool IsNPC;
-    [JsonProperty] private TechnologyTree _technology; // ** WIP - Technology tree for each Civilization
+    [JsonIgnore] private TechnologyTree _technology; // ** WIP - Technology tree for each Civilization
     [JsonProperty] private int _goldPt; // A Civilization's Gold income per turn.
     [JsonProperty] private int _gold; // A Civilization's current gold (accumulated across turns and spent to buy Units/Buildings).
     [JsonProperty] private int _culturePt; // A Civilization's culture generation per turn.
@@ -123,7 +123,7 @@ public class Civilization : ISerialization
         _technology = null;
     }
 
-    public void RestoreAfterDeserialization(Game game)
+    public void RestoreAfterDeserialization(GameManager gameManager)
     {
         if (_settlements is not null)
         {
@@ -131,7 +131,7 @@ public class Civilization : ISerialization
             foreach (Settlement settlement in _settlements)
             {
                 settlement._civilization = this;
-                settlement.RestoreAfterDeserialization(game);
+                settlement.RestoreAfterDeserialization(gameManager);
             }
         }
 
@@ -141,7 +141,7 @@ public class Civilization : ISerialization
             foreach (Unit unit in _units)
             {
                 unit._civilization = this;
-                unit.RestoreAfterDeserialization(game);
+                unit.RestoreAfterDeserialization(gameManager);
             }
         }
     }

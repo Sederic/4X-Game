@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 [System.Serializable]
 public class Game : ISerialization
 {
-    [JsonProperty] public World world;
-    [JsonProperty] public List<Civilization> civilizations;
-    [JsonProperty] public int gameTurn;
-    [JsonProperty] public bool singlePlayer;
+    public World world;
+    public List<Civilization> civilizations;
+    public int gameTurn;
+    public bool singlePlayer;
 
     /* Constructor */
     public Game()
@@ -31,15 +31,15 @@ public class Game : ISerialization
         }
     }
 
-    public void RestoreAfterDeserialization(Game game)
+    public void RestoreAfterDeserialization(GameManager gameManager)
     {
-        world.RestoreAfterDeserialization(game);
+        world.RestoreAfterDeserialization(gameManager);
 
         if (civilizations is not null)
         {
             foreach (Civilization civilization in civilizations)
             {
-                civilization.RestoreAfterDeserialization(game);
+                civilization.RestoreAfterDeserialization(gameManager);
             }
         }
     }
