@@ -308,8 +308,8 @@ public class WorldGenerator : MonoBehaviour
         DetermineTundra();
         DetermineDesert();
         DetermineGrassland();
-        CorrectBiomes(_world);
         DetermineCoasts();
+        CorrectBiomes(_world);
         
         void DetermineSnow()
         {
@@ -493,7 +493,28 @@ public class WorldGenerator : MonoBehaviour
             }
         }
         
-        /* This method is meant to be a scan to correct Biome placings.  */
+        void DetermineCoasts()
+        {
+            // Scan World and change any land tile adjacent to ocean into Coast.
+            for (int x = 0; x < _world.GetLength(); x++)
+            {
+                for (int y = 0; y < _world.GetHeight(); y++)
+                {
+                    if (_world.GetTile(x, y).GetBiome() == 7)
+                    {
+                        foreach (GameTile neighbor in _world.GetTile(x, y).GetNeighbors())
+                        {
+                            if (neighbor is not null && neighbor.IsLand())
+                            {
+                                _world.GetTile(x, y).SetBiome(6);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        /* This method is meant to be a world scan to correct Biome placings.  */
         void CorrectBiomes(World world)
         {
             int totalLand = 0;
@@ -501,7 +522,7 @@ public class WorldGenerator : MonoBehaviour
             int totalGrass = 0;
             int totalDesert = 0;
             
-            // Calculate total tiles and types.
+            // Add up total tiles and types.
             for (int x = 0; x < world.GetLength(); x++)
             {
                 for (int y = 0; y < world.GetHeight(); y++)
@@ -526,7 +547,7 @@ public class WorldGenerator : MonoBehaviour
                 }
             }
             
-            // Change the Biomes on tiles
+            // Change the Biomes on tiles based on their positions
             for (int x = 0; x < world.GetLength(); x++)
             {
                 for (int y = 0; y < world.GetHeight(); y++)
@@ -598,28 +619,13 @@ public class WorldGenerator : MonoBehaviour
                 }
                 return 2;
             }
+            
+            
         }
 
-        void DetermineCoasts()
-        {
-            // Scan World and change any land tile adjacent to ocean into Coast.
-            for (int x = 0; x < _world.GetLength(); x++)
-            {
-                for (int y = 0; y < _world.GetHeight(); y++)
-                {
-                    if (_world.GetTile(x, y).GetBiome() == 7)
-                    {
-                        foreach (GameTile neighbor in _world.GetTile(x, y).GetNeighbors())
-                        {
-                            if (neighbor is not null && neighbor.IsLand())
-                            {
-                                _world.GetTile(x, y).SetBiome(6);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        
+        
+        
         
     }
 
@@ -1341,34 +1347,6 @@ public class WorldGenerator : MonoBehaviour
                             // Remove it's fresh water access
                             currTile.SetFreshWaterAccess(false);
                             currTile.SetRiverAdjacency(false);
-                        }
-                    }
-                    // If it's an inland Coast tile
-                    else if (currTile.GetBiome() == 6)
-                    {
-                        bool isSurrounderByLand = true;
-
-                        foreach (GameTile neighbor in currTile.GetNeighbors())
-                        {
-                            if (neighbor is not null && !neighbor.IsLand())
-                            {
-                                isSurrounderByLand = false;
-                            }
-                        }
-
-                        if (isSurrounderByLand)
-                        {
-                            // Set it to Lake
-                            currTile.SetBiome(8);
-
-                            // Give all of it's neighbor that are land fresh water access
-                            foreach (GameTile neighbor in currTile.GetNeighbors())
-                            {
-                                if (neighbor is not null && neighbor.IsLand())
-                                {
-                                    neighbor.SetFreshWaterAccess(true);
-                                }
-                            }
                         }
                     }
                 }

@@ -589,7 +589,12 @@ public class GameTile : ISerialization
     public bool ObstructsVision()
     {
         // Woods, Rainforest, Hills, and Mountain, obstruct vision
-        if (_feature is 1 or 4 || _terrain is 1 or 2)
+        if (_feature is 1 or 4)
+        {
+            return true;
+        }
+
+        if (_terrain is 1 or 2)
         {
             return true;
         }
