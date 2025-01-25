@@ -369,6 +369,8 @@ public class Director : MonoBehaviour
 
         // // Clear global/static variables for garbage collection
         GameTile.ClearGameTileRegistry();
+        
+        Destroy(gm.gameObject);
 
         SceneManager.LoadScene(0);
     }
