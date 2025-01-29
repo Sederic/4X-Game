@@ -6,8 +6,8 @@ using Random = Unity.Mathematics.Random;
 
 public class WorldGenWalker
 {
-    public Tile currTile; //the tile that the walker is standing on
-    private Tile[][] tiles;
+    public GameTile currGameTile; //the tile that the walker is standing on
+    private GameTile[][] tiles;
     public int direction; //a number from 0-5, which will pull from the list of neighbors
     public bool tooFarUp = false;
     public bool tooFarDown = false;
@@ -18,16 +18,16 @@ public class WorldGenWalker
     public string modify;
     public Random rand;
     
-    public bool DefaultIsValidNeighbor(Tile tile)
+    public bool DefaultIsValidNeighbor(GameTile tile)
     {
         return true;
     }
 
-    public WorldGenWalker(Tile[][] tiles, Tile startTile, string _modify, int _oldTrait, int _newTrait, Random Rand) //initializing variables
+    public WorldGenWalker(GameTile[][] tiles, GameTile startGameTile, string _modify, int _oldTrait, int _newTrait, Random Rand) //initializing variables
     {
         rand = Rand;
         this.tiles = tiles;
-        currTile = startTile;
+        currGameTile = startGameTile;
         oldTrait = _oldTrait;
         newTrait = _newTrait;
         modify = _modify;
@@ -41,7 +41,7 @@ public class WorldGenWalker
      * as its new direction
      *
      * several fail safes in place:
-     * if the currTile is null, which will happen
+     * if the currGameTile is null, which will happen
      * if the walker traverses off of the map,
      * it will start again from a new completely random tile
      *
@@ -57,15 +57,15 @@ public class WorldGenWalker
      */ 
     public bool Move() 
     {
-        if (currTile == null || rand.NextInt(0, 100) > 98) // 1% chance for walker to go rogue
+        if (currGameTile == null || rand.NextInt(0, 100) > 98) // 1% chance for walker to go rogue
         {
             int randomX = rand.NextInt(0, tiles.Length);
             int randomY = rand.NextInt(0, tiles[0].Length);
-            currTile = tiles[randomX][randomY]; //teleports to a completely random spot
+            currGameTile = tiles[randomX][randomY]; //teleports to a completely random spot
             return false;
         }
-        Tile?[] neighbors = Tile.GetNeighborsArray(tiles, currTile.x, currTile.y);
-        Tile? currNeighbor = neighbors[direction];
+        GameTile?[] neighbors = GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y);
+        GameTile? currNeighbor = neighbors[direction];
 
         switch (modify)
         {
@@ -75,7 +75,7 @@ public class WorldGenWalker
                     currNeighbor = findNewNeighbor(neighbors);
                     if (currNeighbor == null)
                     {
-                        currTile = neighbors[direction];
+                        currGameTile = neighbors[direction];
                         direction = RandomDirectionNotNearEdges();
                         return false;
                     }
@@ -88,7 +88,7 @@ public class WorldGenWalker
                     currNeighbor = findNewNeighbor(neighbors);
                     if (currNeighbor == null || currNeighbor.biome == Biome.Desert)
                     {
-                        currTile = neighbors[direction];
+                        currGameTile = neighbors[direction];
                         direction = rand.NextInt(0, 6);
         
                         if (tooFarUp && (direction == 0 || direction == 1 || direction == 5)) //too far up causes re-roll for upward tiles
@@ -121,7 +121,7 @@ public class WorldGenWalker
                     currNeighbor = findNewNeighbor(neighbors);
                     if (currNeighbor == null)
                     {
-                        currTile = neighbors[direction];
+                        currGameTile = neighbors[direction];
                         direction = RandomDirectionNotNearEdges();
 
 
@@ -145,7 +145,7 @@ public class WorldGenWalker
                 break;
         }
         
-        currTile = neighbors[direction];
+        currGameTile = neighbors[direction];
         direction = RandomDirectionNotNearEdges();
     
         return true;
@@ -154,8 +154,9 @@ public class WorldGenWalker
     private int RandomDirectionNotNearEdges()
     {
         int direction = rand.NextInt(0, 6);
-        int maxAttempts = 10; // Prevent infinite loops
+        int maxAttempts = 4; // Prevent infinite loops
         int attempts = 0;
+        int probability = rand.NextInt(0, 3);
         
         do
         {
@@ -167,8 +168,8 @@ public class WorldGenWalker
             (
                 (tooFarUp && (direction == 0 || direction == 1 || direction == 5)) || 
                 (tooFarDown && (direction == 2 || direction == 3 || direction == 4)) || 
-                (tooFarLeft && (direction == 5 || direction == 4)) || 
-                (tooFarRight && (direction == 1 || direction == 2))
+                (tooFarLeft && probability != 0 && (direction == 5 || direction == 4)) || 
+                (tooFarRight && probability != 0 && (direction == 1 || direction == 2))
             )
         );
 
@@ -177,16 +178,16 @@ public class WorldGenWalker
 
     /*goes through the list of neighbors and finds all non-null water tiles
      stores all valid tiles in a linked list, then randomly selects one
-     returns the randomly selected Tile to be used as currNeighbor in move()
+     returns the randomly selected GameTile to be used as currNeighbor in move()
      */
-    public Tile findNewNeighbor(Tile[] neighbors)
+    public GameTile findNewNeighbor(GameTile[] neighbors)
     {
-        LinkedList<Tile> validNeighbors = new LinkedList<Tile>();
+        LinkedList<GameTile> validNeighbors = new LinkedList<GameTile>();
 
         switch (modify)
         {
             case "biome":
-                foreach (Tile neighbor in neighbors)
+                foreach (GameTile neighbor in neighbors)
                 {
                     if (neighbor != null && (int)neighbor.biome == oldTrait)
                     {
@@ -196,7 +197,7 @@ public class WorldGenWalker
 
                 break;
             case "terrain":
-                foreach (Tile neighbor in neighbors)
+                foreach (GameTile neighbor in neighbors)
                 {
                     if (neighbor != null && neighbor.terrain == (Terrain)oldTrait && neighbor.biome != Biome.Ocean)
                     {
@@ -206,7 +207,7 @@ public class WorldGenWalker
 
                 break;
             case "feature":
-                foreach (Tile neighbor in neighbors)
+                foreach (GameTile neighbor in neighbors)
                 {
                     if (neighbor != null && neighbor.feature == (Feature)oldTrait)
                     {

@@ -6,16 +6,16 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Represents a Tile in the game world, storing its biome, terrain, features, resources, and tileImprovements.
+/// Represents a GameTile in the game world, storing its biome, terrain, features, resources, and tileImprovements.
 ///
-/// <para>**Methods in Tile Class:**</para>
+/// <para>**Methods in GameTile Class:**</para>
 /// <list type="bullet">
-/// <item><description>Tile(int) - Initializes a tile with a given biome.</description></item>
-/// <item><description>GetNeighborsArray(Tile[][], int, int) - Gets up to 6 neighboring tiles in a hexagonal grid. Top, Top-Right, Bottom-Right, etc.</description></item>
+/// <item><description>GameTile(int) - Initializes a tile with a given biome.</description></item>
+/// <item><description>GetNeighborsArray(GameTile[][], int, int) - Gets up to 6 neighboring tiles in a hexagonal grid. Top, Top-Right, Bottom-Right, etc.</description></item>
 /// <item><description>GetYields() - Calculates and returns the tile’s food and production yields.</description></item>
 /// </list>
 /// </summary>
-public class Tile
+public class GameTile
 {
     public int x { get; private set; }
     public int y { get; private set; }
@@ -26,15 +26,15 @@ public class Tile
     public Resource resource { get; private set; }
     public TileImprovement tileImprovement { get; private set; }
 
-    public bool[] riverEdges { get; private set; } = new bool[6]; // Are the Tile edges Adjacent to a river? -> [0,1,2,3,4,5] Represent edges on a hexagon starting from the Top moving clockwise.
+    public bool[] riverEdges { get; private set; } = new bool[6]; // Are the GameTile edges Adjacent to a river? -> [0,1,2,3,4,5] Represent edges on a hexagon starting from the Top moving clockwise.
     public bool hasFreshWater { get; private set; } = false;
 
     public Settlement settlement { get; private set; }
 
     /// <summary>
-    /// Initializes a new Tile with the specified Biome.
+    /// Initializes a new GameTile with the specified Biome.
     /// </summary>
-    public Tile(int x, int y, Biome biome)
+    public GameTile(int x, int y, Biome biome)
     {
         this.x = x;
         this.y = y;
@@ -49,9 +49,9 @@ public class Tile
     /// Gets the six neighboring tiles in a hexagonal grid. Top, Top-Right, Bottom-Right, etc.
     /// </summary>
     /// <returns>List of neighboring tiles.</returns>
-    public static Tile?[] GetNeighborsArray(Tile[][] tiles, int tileX, int tileY)
+    public static GameTile?[] GetNeighborsArray(GameTile[][] tiles, int tileX, int tileY)
     {
-        Tile?[] neighbors = new Tile?[6];
+        GameTile?[] neighbors = new GameTile?[6];
 
         // Check if tileX and tileY are out of bounds
         if (tileX < 0 || tileY < 0 || tileX >= tiles.Length || tileY >= tiles[0].Length)
@@ -95,6 +95,7 @@ public class Tile
 
         return neighbors;
     }
+    public GameTile?[] GetNeighborsArray() { return GameTile.GetNeighborsArray(Game.Instance.world.tiles, x, y); }
 
     /// <summary>
     /// Calculates and returns the yields of the tile (Food, Production).
@@ -145,7 +146,7 @@ public class Tile
                 return (0, 0); // Mountains have no yields
         }
 
-        // Factor in Tile Feature
+        // Factor in GameTile Feature
         switch (feature)
         {
             case Feature.None:
@@ -167,7 +168,7 @@ public class Tile
                 break;
         }
 
-        // Factor in Tile Improvement
+        // Factor in GameTile Improvement
         switch (tileImprovement)
         {
             case TileImprovement.NoFeature:
@@ -224,14 +225,14 @@ public class Tile
     public bool HasRiver() { return riverEdges.Any(edge => edge); }
 
     /* -- Overload Boolean Comparisons -- */
-    public static bool operator ==(Tile a, Tile b)
+    public static bool operator ==(GameTile a, GameTile b)
     {
         if (ReferenceEquals(a, b)) return true;
         if (a is null || b is null) return false;
         return a.x == b.x && a.y == b.y;
     }
-    public static bool operator !=(Tile a, Tile b) { return !(a == b); }
-    public override bool Equals(object obj) { return (obj is Tile otherTile) ? this == otherTile : false; }
+    public static bool operator !=(GameTile a, GameTile b) { return !(a == b); }
+    public override bool Equals(object obj) { return (obj is GameTile otherGameTile) ? this == otherGameTile : false; }
     public override int GetHashCode() { return HashCode.Combine(x, y); }
 
 }
