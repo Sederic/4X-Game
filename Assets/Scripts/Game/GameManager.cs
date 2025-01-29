@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using UnityEngine;
@@ -29,7 +30,14 @@ public class GameManager : MonoBehaviour {
         isHost = true;
 
         // Create Game + World
-        game = new Game();
+        List<Civilization> civs = new List<Civilization>();
+        civs.Add(new Civilization("p1"));
+        civs.Add(new Civilization("p2"));
+
+        int seed = 1;
+        game = new Game(false, seed, civs);
+
+        // Display world
         
     }
 
