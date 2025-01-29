@@ -63,7 +63,7 @@ public class MenuHandler : MonoBehaviour
         
         void LoadSelectedSave(string filePath)
         {
-            gameManager.LoadGame(filePath);
+            // gameManager.LoadGame(filePath);
         }
     }
 
@@ -87,6 +87,14 @@ public class MenuHandler : MonoBehaviour
     {
         int input = int.Parse(seedInput.text);
         uint seed = Convert.ToUInt32(input);
-        gameManager.NewDemoGame(seed);
+        // gameManager.NewDemoGame(seed);
+    }
+
+    public void NewMultiplayerGame() {
+        gameManager.HostNewMultiplayerGame();
+    }
+
+    public void LoadMultiplayerGmae() {
+        gameManager.JoinMultiplayerGame();
     }
 }
