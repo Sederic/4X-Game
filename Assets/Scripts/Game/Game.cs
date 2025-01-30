@@ -21,8 +21,10 @@ public class Game {
     private Game() {}
     
     public async Task Initialize (bool isSinglePlayer, int seed, List<Civilization> civs) {
-        world = new World(seed, civs.Count);
+        this.isSinglePlayer = isSinglePlayer;
         this.civs = civs;
+        
+        world = new World(seed, civs.Count);
         Debug.Log("done");
 
         // Game UI object

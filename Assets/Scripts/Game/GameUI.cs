@@ -257,7 +257,6 @@ public class GameUI : MonoBehaviour
     }
 
 
-
     /* Calls all the other Camera methods. */
     void CameraControl()
     {
