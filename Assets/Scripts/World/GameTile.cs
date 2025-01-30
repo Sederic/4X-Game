@@ -17,6 +17,7 @@ using UnityEngine.UI;
 /// </summary>
 public class GameTile
 {
+    public static GameTile[][] AllTiles { get; private set; }
     public int x { get; private set; }
     public int y { get; private set; }
 
@@ -44,6 +45,8 @@ public class GameTile
         resource = Resource.None;
         tileImprovement = TileImprovement.NoFeature;
     }
+
+    public static void SetAllTiles(GameTile[][] allTiles) { AllTiles = allTiles; }
 
     /// <summary>
     /// Gets the six neighboring tiles in a hexagonal grid. Top, Top-Right, Bottom-Right, etc.
@@ -95,7 +98,8 @@ public class GameTile
 
         return neighbors;
     }
-    public GameTile?[] GetNeighborsArray() { return GameTile.GetNeighborsArray(Game.Instance.world.tiles, x, y); }
+    public static GameTile?[] GetNeighborsArray(int tileX, int tileY) { return GameTile.GetNeighborsArray(AllTiles, tileX, tileY); }
+    public GameTile?[] GetNeighborsArray() { return GameTile.GetNeighborsArray(AllTiles, x, y); }
 
     /// <summary>
     /// Calculates and returns the yields of the tile (Food, Production).

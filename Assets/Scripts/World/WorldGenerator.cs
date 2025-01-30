@@ -24,6 +24,8 @@ public class WorldGenerator {
             }
         }
 
+        GameTile.SetAllTiles(tiles);
+
         DetermineContinents();
         DetermineLand();
         DetermineBiomes();
@@ -48,7 +50,7 @@ public class WorldGenerator {
         // Different Procedures given different numbers of continents
         int totalWorldSize = tiles[0].Length * tiles.Length;
         float desiredWorldCoverage = totalWorldSize * random.NextFloat(0.4f, 0.5f); // Some random percentage of world size between 45-55%
-        int currentWorldCoverage = 2; // How many GameTiles have been turned to land so far.
+        int currentWorldCoverage = 2; // How many Tiles have been turned to land so far.
         int probabilityThreshold = 35; // Base percentage of likelihood to NOT place GameTile. (is increased by many factors)
         int consecutiveFailures = 0; // Keeps track of how many times the procedure has failed to place a GameTile. (Makes it more likely to succeed if it failed a lot)
         int failureFactor = 12; // The probability factor power of each consecutive failure.
@@ -77,10 +79,10 @@ public class WorldGenerator {
                         }
 
                         // being above 70% of world height is too high
-                        walker.tooFarUp = (walker.currGameTile.x < tiles.Length * 0.3);
+                        walker.tooFarUp = (walker.currTile.x < tiles.Length * 0.3);
 
                         // being below 30% of world height is too low
-                        walker.tooFarDown = (walker.currGameTile.x > tiles.Length * 0.7);
+                        walker.tooFarDown = (walker.currTile.x > tiles.Length * 0.7);
                     }
                 }
                 break;
@@ -96,7 +98,7 @@ public class WorldGenerator {
                 Point continentStart2 = new Point(continentStart2X, continentStart2Y);
 
                 // Set important factors for this world gen 
-                currentWorldCoverage = 2; // How many GameTiles have been turned to land so far.
+                currentWorldCoverage = 2; // How many Tiles have been turned to land so far.
                 probabilityThreshold = 25; // Base percentage of likelihood to NOT place GameTile. (is increased by many factors)
                 consecutiveFailures = 0; // Keeps track of how many times the procedure has failed to place a GameTile. (Makes it more likely to succeed if it failed a lot)
                 failureFactor = 12; // The probability factor power of each consecutive failure.
@@ -105,7 +107,7 @@ public class WorldGenerator {
                 Queue<Point> queue = new Queue<Point>();
 
                 // Add all neighbors of the first continent to the queue
-                foreach (GameTile? t in GameTile.GetNeighborsArray(tiles, continentStart1.x, continentStart1.y))
+                foreach (GameTile? t in GameTile.GetNeighborsArray(continentStart1.x, continentStart1.y))
                 {
                     if (t is not null) queue.Enqueue(new Point(t.x, t.y));
                 }
@@ -131,7 +133,7 @@ public class WorldGenerator {
                         queue.Clear();
                         
                         // Add all the neighbors of continent #2 to the queue.
-                        foreach (GameTile? t in GameTile.GetNeighborsArray(tiles, continentStart2.x, continentStart2.y))
+                        foreach (GameTile? t in GameTile.GetNeighborsArray(continentStart2.x, continentStart2.y))
                         {
                             if (t is not null) queue.Enqueue(new Point(t.x, t.y));
                         }
@@ -139,11 +141,11 @@ public class WorldGenerator {
 
                     // Deque the first GameTile
                     Point dequed = queue.Dequeue();
-                    GameTile currentGameTile = tiles[dequed.x][dequed.y];
+                    GameTile currentTile = tiles[dequed.x][dequed.y];
 
                     // Instantiate an empty List of possible neighbors
                     List<GameTile> possibleNeighbors = new List<GameTile>();
-                    foreach (GameTile t in GameTile.GetNeighborsArray(tiles, currentGameTile.x, currentGameTile.y))
+                    foreach (GameTile t in currentTile.GetNeighborsArray())
                     {
                         if (t is not null && t.biome == Biome.Ocean)
                         {
@@ -176,7 +178,7 @@ public class WorldGenerator {
                         
                         // Increases the closer currentNeighbor's X is to 0 or to max world.Length
                         divisionFactor = (currentNeighbor.y < tiles[0].Length * 0.15 || currentNeighbor.y > tiles[0].Length * 0.85) ? 1 : 2;
-                        int distanceToEdgeFactor = Math.Min(currentNeighbor.y, tiles[0].Length - currentNeighbor.y) / divisionFactor; 
+                        int distanceToEdgeFactor = Math.Abs(tiles[0].Length / 2 - currentNeighbor.y) / divisionFactor; 
                         
                         // Add all the factors to the probability threshold. Roll a number from 0-100 and see if it expands the tile.
                         if (probability > probabilityThreshold + heightFactor + distanceToCenterFactor + distanceToEdgeFactor - (consecutiveFailures * failureFactor))
@@ -206,8 +208,8 @@ public class WorldGenerator {
     {
         /* Snow */
         // Determine Snow world boundaries
-        int southSnowLine = tiles.Length - (tiles.Length / 7);
         int northSnowLine = tiles.Length / 7;
+        int southSnowLine = tiles.Length * 6/7;
         // Track's total Snow coverage in world
         int desiredSnowCoverage = tiles.Length * tiles[0].Length/25; //% of world coverage in snow, bugged rn so it is higher than this number
         int currentSnowCoverage = 0;
@@ -218,16 +220,16 @@ public class WorldGenerator {
         
         /* Tundra */
         // Determine Tundra world boundaries
-        int southTundraLine = southSnowLine - (tiles.Length / 12);
         int northTundraLine = northSnowLine + (tiles.Length / 12);
-        // Convert all Plains GameTiles adjacent to Snow into Tundra 
+        int southTundraLine = southSnowLine - (tiles.Length / 12);
+        // Convert all Plains Tiles adjacent to Snow into Tundra 
         int desiredTundraCoverage = desiredSnowCoverage * 3/2;
         int currentTundraCoverage = 0;
         
         /* Desert */
         // Determine Desert world boundaries
-        int southDesertLine = tiles.Length/2 + (tiles.Length / 8);
-        int northDesertLine = tiles.Length/2 - (tiles.Length / 8);
+        int northDesertLine = tiles.Length * 3/8;
+        int southDesertLine = tiles.Length * 5/8;
         // Track's total Desert coverage in World
         int desiredDesertCoverage = desiredSnowCoverage/3;
         int currentDesertCoverage = 0;
@@ -268,7 +270,7 @@ public class WorldGenerator {
                 walkers[i] = new WorldGenWalker(tiles, snowStarts[i],"biome", 1, 5, random);
             }
 
-            // Convert GameTiles to Snow until we reach the desired world coverage
+            // Convert Tiles to Snow until we reach the desired world coverage
             while (currentSnowCoverage < desiredSnowCoverage)
             {
                 foreach (WorldGenWalker walker in walkers) //goes through all the walkers in the list
@@ -278,10 +280,11 @@ public class WorldGenerator {
                         currentSnowCoverage++; //snow coverage increases, otherwise keep iterating
                     }
 
-                    if (walker.currGameTile != null)
+                    GameTile tile = walker.currTile;
+                    if (tile != null)
                     {
-                        walker.tooFarDown = (walker.currGameTile.x > southSnowLine);
-                        walker.tooFarUp = (walker.currGameTile.x < northSnowLine);
+                        walker.tooFarDown = (tile.x > northSnowLine && tile.x < tiles.Length/2);
+                        walker.tooFarUp = (tile.x < southSnowLine && tile.x > tiles.Length/2);
                     }
                 }
             }
@@ -322,10 +325,11 @@ public class WorldGenerator {
                     {
                         currentTundraCoverage++; //tundra coverage increases, otherwise keep iterating
                     }
-                    if (walker.currGameTile != null)
+                    if (walker.currTile != null)
                     {
-                        walker.tooFarDown = (walker.currGameTile.x > southTundraLine);
-                        walker.tooFarUp = (walker.currGameTile.x < northTundraLine);
+                        GameTile tile = walker.currTile;
+                        walker.tooFarDown = (tile.x > northTundraLine && tile.x < tiles.Length/2);
+                        walker.tooFarUp = (tile.x < southTundraLine && tile.x > tiles.Length/2);
                     }
                 }
             }
@@ -339,7 +343,7 @@ public class WorldGenerator {
                 walker.newTrait = (int)Biome.Desert;
             }
             
-            // Convert GameTiles to Desert until achieved desired coverage
+            // Convert Tiles to Desert until achieved desired coverage
             while (currentDesertCoverage < desiredDesertCoverage)
             {
                 foreach (WorldGenWalker walker in walkers) //goes through all the walkers in the list
@@ -349,9 +353,10 @@ public class WorldGenerator {
                         currentDesertCoverage++; //desert coverage increases, otherwise keep iterating
                     }
 
-                    if (walker.currGameTile is not null) {
-                        walker.tooFarUp = (walker.currGameTile.x < northDesertLine);
-                        walker.tooFarDown = (walker.currGameTile.x > southDesertLine);
+                    if (walker.currTile is not null) {
+                        GameTile tile = walker.currTile;
+                        walker.tooFarUp = (walker.currTile.x < northDesertLine);
+                        walker.tooFarDown = (walker.currTile.x > southDesertLine);
                     }
                 }
             }
@@ -365,7 +370,7 @@ public class WorldGenerator {
                 walker.newTrait = 2;
             }
             
-            // Convert GameTiles to Grassland until achieved desired coverage
+            // Convert Tiles to Grassland until achieved desired coverage
             while (currentGrassCoverage < desiredGrassCoverage)
             {
                 foreach (WorldGenWalker walker in walkers) //goes through all the walkers in the list
@@ -380,21 +385,34 @@ public class WorldGenerator {
         
         void DetermineCoasts()
         {
-            // Scan World and change any land tile adjacent to ocean into Coast.
-            for (int x = 0; x < tiles.Length; x++)
+            List<GameTile> coastFrontier = new List<GameTile>();
+            int coastDepth = 3;
+
+            for (int i=0; i<coastDepth; i++)
             {
-                for (int y = 0; y < tiles[0].Length; y++)
+                coastFrontier.Clear();
+                
+                for (int x=0; x<tiles.Length; x++)
                 {
-                    if (tiles[x][y].biome == Biome.Ocean)
+                    for (int y=0; y<tiles[0].Length; y++)
                     {
-                        foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, x, y))
+                        if (tiles[x][y].biome == Biome.Ocean)
                         {
-                            if (neighbor is not null && neighbor.IsLand())
+                            foreach (GameTile? neighbor in tiles[x][y].GetNeighborsArray())
                             {
-                                tiles[x][y].SetBiome(Biome.Ocean);
+                                if (neighbor is not null && neighbor.biome != Biome.Ocean)
+                                {
+                                    coastFrontier.Add(tiles[x][y]);
+                                    break;
+                                }
                             }
                         }
                     }
+                }
+
+                foreach (GameTile tile in coastFrontier)
+                {
+                    tile.SetBiome(Biome.Coast);
                 }
             }
         }
@@ -412,20 +430,20 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
                     
-                    if (currGameTile.IsLand())
+                    if (currTile.IsLand())
                     {
                         totalLand++;
                     }
 
-                    if (currGameTile.biome == Biome.Plains)
+                    if (currTile.biome == Biome.Plains)
                     {
                         totalPlains++;
-                    } else if (currGameTile.biome == Biome.Grassland)
+                    } else if (currTile.biome == Biome.Grassland)
                     {
                         totalGrass++;
-                    } else if (currGameTile.biome == Biome.Desert)
+                    } else if (currTile.biome == Biome.Desert)
                     {
                         totalDesert++;
                     }
@@ -437,46 +455,46 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
 
                     // If GameTile is Tundra
-                    if (currGameTile.biome == Biome.Tundra)
+                    if (currTile.biome == Biome.Tundra)
                     {
                         if (x > tiles.Length * .25 && x < tiles.Length * .75)
                         {
-                            currGameTile.SetBiome(ChangeBiome());
+                            currTile.SetBiome(ChangeBiome());
                         } 
                     } 
                     // If GameTile is Desert
-                    else if (currGameTile.biome == Biome.Desert)
+                    else if (currTile.biome == Biome.Desert)
                     {
                         if (x < tiles.Length * .20 || x > tiles.Length * .80)
                         {
-                            currGameTile.SetBiome(ChangeBiome());
+                            currTile.SetBiome(ChangeBiome());
                         }
                         
                         // For any Desert that has Tundra adjacent to it. Change the GameTile to something else.
-                        foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                        foreach (GameTile? neighbor in currTile.GetNeighborsArray())
                         {
                             if (neighbor is not null && neighbor.biome == Biome.Tundra)
                             {
-                                currGameTile.SetBiome(ChangeBiome());
+                                currTile.SetBiome(ChangeBiome());
                             }
                         }
                     }
                     // If GameTile is Snow 
-                    else if (currGameTile.biome == Biome.Snow)
+                    else if (currTile.biome == Biome.Snow)
                     {
                         // And it's inside the restricted zone.
                         if (x > tiles.Length * .15 && x < tiles.Length * .85)
                         {
                             // Change it to either Grass or Plains depending on what is needed
-                            currGameTile.SetBiome(ChangeBiome());
+                            currTile.SetBiome(ChangeBiome());
                             continue;
                         }
                         
-                        // For every Snow GameTile's neighbors. If it's neighbors are not Tundra, change it
-                        foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, x, y))
+                        // For every Snow Tile's neighbors. If it's neighbors are not Tundra, change it
+                        foreach (GameTile? neighbor in tiles[x][y].GetNeighborsArray())
                         {
                             if (neighbor is not null && neighbor.biome != Biome.Ocean && neighbor.biome != Biome.Coast && neighbor.biome != Biome.Snow)
                             {
@@ -530,12 +548,18 @@ public class WorldGenerator {
         }
         foreach (WorldGenWalker walker in walkers)
         {
-            walker.tooFarUp = random.NextInt(0, 2) == 0;
-            walker.tooFarDown = !walker.tooFarUp;
+            // walker.tooFarUp = random.NextInt(0, 2) == 0;
+            // walker.tooFarDown = !walker.tooFarUp;
 
-            int horizontal = random.NextInt(0, 3);
-            walker.tooFarLeft = horizontal == 0;
-            walker.tooFarRight = horizontal == 1;
+            // int horizontal = random.NextInt(0, 3);
+            // walker.tooFarLeft = horizontal == 0;
+            // walker.tooFarRight = horizontal == 1;
+
+            // so cursed lmao
+            if (random.NextInt(0, 2) == 0) { walker.tooFarUp = true; }
+            else { walker.tooFarDown = true; }
+            if (random.NextInt(0, 3) == 0) { walker.tooFarLeft = true; }
+            else if (random.NextInt(0, 2) == 1) { walker.tooFarRight = true; }
 
             desiredMountainSize = random.NextInt(100, 150); //random numbers, can be adjusted
             while (mountainSize < desiredMountainSize)
@@ -561,32 +585,32 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
                     // If GameTile has a Moutain
-                    if (currGameTile.terrain == Terrain.Mountain)
+                    if (currTile.terrain == Terrain.Mountain)
                     {
-                        mountains.Add(currGameTile);
+                        mountains.Add(currTile);
 
                         // If GameTile is Coast or Ocean
-                        if (!currGameTile.IsLand())
+                        if (!currTile.IsLand())
                         {
                             // Remove mountain
-                            currGameTile.SetTerrain(Terrain.Flat);
+                            currTile.SetTerrain(Terrain.Flat);
                         }
                         
                         // If GameTile is Desert
-                        if (currGameTile.biome == Biome.Desert)
+                        if (currTile.biome == Biome.Desert)
                         {
                             // Randomly set the GameTile to either Flat or Hills
-                            currGameTile.SetTerrain((Terrain)random.NextInt(0, 2));
+                            currTile.SetTerrain(random.NextInt(0, 2) == 0 ? Terrain.Flat : Terrain.Hill);
                             
                             // If a neighbor is not null, is land, and is not desert
-                            foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                            foreach (GameTile? neighbor in currTile.GetNeighborsArray())
                             {
                                 if (neighbor is not null && neighbor.IsLand() && neighbor.biome != Biome.Desert)
                                 {
                                     // Put a mountain next to it.
-                                    neighbor.SetTerrain(Terrain.Mountain);
+                                    // neighbor.SetTerrain(Terrain.Mountain);
                                 }
                             }
                         }
@@ -598,15 +622,14 @@ public class WorldGenerator {
             foreach (GameTile mountain in mountains)
             {
                 // For all their neighbors
-                foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, mountain.x, mountain.y))
+                foreach (GameTile? neighbor in mountain.GetNeighborsArray())
                 {
                     // If none of that mountain's neighbors are null or anything other than Mountains
-                    if (neighbor is null || neighbor.terrain != Terrain.Mountain)
+                    if (neighbor is null || neighbor.terrain == Terrain.Mountain)
                     {
+                        if (random.NextInt(0, 10) > 3) { mountain.SetTerrain(Terrain.Flat); }
                         break;
                     }
-                    //Make them Flat. - This means this mountain was surrounded by mountains.
-                    mountain.SetTerrain(Terrain.Flat);
                 }
             }
             
@@ -616,7 +639,7 @@ public class WorldGenerator {
                 int coastalNeighbors = 0;
                 int coastalFactor = 30 * coastalNeighbors;
                 // For all their neighbors
-                foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, mountain.x, mountain.y))
+                foreach (GameTile? neighbor in mountain.GetNeighborsArray())
                 {
                     
                     if (neighbor is not null && neighbor.biome == Biome.Coast)
@@ -656,7 +679,7 @@ public class WorldGenerator {
             // For reach hill, give it another 15% chance it's neighbors will be hills
             foreach (GameTile hill in hills)
             {
-                foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, hill.x, hill.y))
+                foreach (GameTile? neighbor in hill.GetNeighborsArray())
                 {
                     if (neighbor is not null && neighbor.terrain == Terrain.Flat && neighbor.biome != Biome.Coast &&
                         neighbor.biome != Biome.Ocean)
@@ -709,13 +732,13 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
 
-                    if (scannedGameTiles.Contains(currGameTile)) continue;
+                    if (scannedGameTiles.Contains(currTile)) continue;
                     
-                    if (IsSurroundedByLand(currGameTile, maxDistance))
+                    if (IsSurroundedByLand(currTile, maxDistance))
                     {
-                        validGameTiles.Add(currGameTile);
+                        validGameTiles.Add(currTile);
                     }
                 }
             }
@@ -733,28 +756,28 @@ public class WorldGenerator {
 
             while (queue.Count > 0)
             {
-                var (currentGameTile, distance) = queue.Dequeue();
+                var (currentTile, distance) = queue.Dequeue();
                 
                 // If we've reached max distance, stop checking further neighbors
                 if (distance > maxDistance) continue;
 
                 // If the current tile has already been scanned, stop
-                if (scannedGameTiles.Contains(currentGameTile))
+                if (scannedGameTiles.Contains(currentTile))
                 {
                     return false; // This tile intersects with a previous valid tile's radius
                 }
                 
                 // If the current tile is not land, return false
-                if (!currentGameTile.IsLand())
+                if (!currentTile.IsLand())
                 {
                     return false;
                 }
                 
                 // Add to local list of tiles being scanned for this search
-                localGameTilesScanned.Add(currentGameTile);
+                localGameTilesScanned.Add(currentTile);
                 
                 //Enqueue the neighbors to continue .xploring within the distance limit.
-                GameTile?[] neighbors = GameTile.GetNeighborsArray(tiles, currentGameTile.x, currentGameTile.y);
+                GameTile?[] neighbors = currentTile.GetNeighborsArray();
                 foreach (GameTile? neighbor in neighbors)
                 {
                     if (neighbor is not null && !visited.Contains(neighbor))
@@ -784,10 +807,10 @@ public class WorldGenerator {
         
         ClearTShapedRiverIntersections();
         
-        // Set FreshWaterAccess to true for all GameTiles adjacent to River.
+        // Set FreshWaterAccess to true for all Tiles adjacent to River.
         AssignRemainingFreshWaterAccess();
         
-        /* Returns a List(Path) of GameTiles to create a River */
+        /* Returns a List(Path) of Tiles to create a River */
         List<GameTile> FormRiver(GameTile start, int riverLength)
         {
             List<GameTile> tileList = new List<GameTile>();
@@ -805,7 +828,7 @@ public class WorldGenerator {
             bool wentLeft = false;
             bool wentRight = false;
             
-            GameTile currGameTile = start;
+            GameTile currTile = start;
             // Until we reach the river's lenght, keep adding tiles to the List to make river.
             for (int i = 0; i < riverLength; i++)
             {
@@ -843,7 +866,7 @@ public class WorldGenerator {
                     nextEdge = possibleNeighbors[random.NextInt(possibleNeighbors.Length)];
                 }
 
-                GameTile? nextGameTile = GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[nextEdge];
+                GameTile? nextGameTile = currTile.GetNeighborsArray()[nextEdge];
 
                 // If the next GameTile is null, return List and end river path.
                 if (nextGameTile is null)
@@ -853,11 +876,11 @@ public class WorldGenerator {
                 
                 // Add it to the list
                 tileList.Add(nextGameTile);
-                // Set the current GameTile's river Adjacency to true.
-                currGameTile.SetHasFreshWater(true);
+                // Set the current Tile's river Adjacency to true.
+                currTile.SetHasFreshWater(true);
                 
                 // Check if we are currently adjacent to a Coast.
-                foreach (GameTile? neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                foreach (GameTile? neighbor in currTile.GetNeighborsArray())
                 {
                     if (neighbor is not null)
                     {
@@ -865,7 +888,7 @@ public class WorldGenerator {
                         if (neighbor.biome == Biome.Coast || neighbor.biome == Biome.Ocean)
                         { 
                             // Deactivate previous edge on this tile.
-                            currGameTile.SetRiverEdge(prevEdge, false);
+                            currTile.SetRiverEdge(prevEdge, false);
                         
                             // End the River
                             return tileList;
@@ -874,15 +897,15 @@ public class WorldGenerator {
                     else
                     {
                         // Deactivate previous edge on this tile.
-                        currGameTile.SetRiverEdge(prevEdge, false);
+                        currTile.SetRiverEdge(prevEdge, false);
                         
                         return tileList;
                     }
                     
                 }
                 
-                // Update currGameTile to the next neighbor
-                currGameTile = GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[nextEdge];
+                // Update currTile to the next neighbor
+                currTile = currTile.GetNeighborsArray()[nextEdge];
                 
                 // Update what the direction of previous edge was.
                 if (nextEdge == 0 && prevEdge == 5)
@@ -904,11 +927,11 @@ public class WorldGenerator {
                 prevEdge = nextEdge;
             }
             
-            // Return a List (path) of GameTiles for the river.
+            // Return a List (path) of Tiles for the river.
             return tileList;
         }
         
-        /* Takes a List (Path) of GameTiles and sets the edges in order to create a River. */
+        /* Takes a List (Path) of Tiles and sets the edges in order to create a River. */
         void SetRiverEdges(List<GameTile> riverPath)
         {
             if (riverPath.Count == 1)
@@ -918,21 +941,21 @@ public class WorldGenerator {
             
             for (int i = 0; i < riverPath.Count; i++)
             {
-                GameTile currentGameTile = riverPath[i];
+                GameTile currentTile = riverPath[i];
 
                 // Handle first tile
                 if (i == 0)
                 {
                     GameTile nextGameTile = riverPath[i + 1];
-                    int nextGameTileEdgeIndex = GetSharedEdgeIndex(currentGameTile, nextGameTile);
-                    currentGameTile.SetRiverEdge(nextGameTileEdgeIndex, true);
+                    int nextGameTileEdgeIndex = GetSharedEdgeIndex(currentTile, nextGameTile);
+                    currentTile.SetRiverEdge(nextGameTileEdgeIndex, true);
                 }
                 // Handle last tile
                 else if (i == riverPath.Count - 1)
                 {
                     GameTile previousGameTile = riverPath[i - 1];
-                    int prevGameTileEdgeIndex = GetSharedEdgeIndex(currentGameTile, previousGameTile);
-                    currentGameTile.SetRiverEdge(prevGameTileEdgeIndex, true);
+                    int prevGameTileEdgeIndex = GetSharedEdgeIndex(currentTile, previousGameTile);
+                    currentTile.SetRiverEdge(prevGameTileEdgeIndex, true);
                 }
                 // Handle middle tiles
                 else
@@ -940,22 +963,22 @@ public class WorldGenerator {
                     GameTile previousGameTile = riverPath[i - 1];
                     GameTile nextGameTile = riverPath[i + 1];
             
-                    int prevGameTileEdgeIndex = GetSharedEdgeIndex(currentGameTile, previousGameTile);
-                    int nextGameTileEdgeIndex = GetSharedEdgeIndex(currentGameTile, nextGameTile);
+                    int prevGameTileEdgeIndex = GetSharedEdgeIndex(currentTile, previousGameTile);
+                    int nextGameTileEdgeIndex = GetSharedEdgeIndex(currentTile, nextGameTile);
                     
                     // Now connect the shared edges insided the tile
-                    ConnectInternalEdges(currentGameTile, prevGameTileEdgeIndex, nextGameTileEdgeIndex);
+                    ConnectInternalEdges(currentTile, prevGameTileEdgeIndex, nextGameTileEdgeIndex);
                 }
             }
         }
         
         // Determines the shared edge between two tiles
-        int GetSharedEdgeIndex(GameTile currentGameTile, GameTile nextGameTile)
+        int GetSharedEdgeIndex(GameTile currentTile, GameTile nextGameTile)
         {
             // Iterate over the neighbors array to find the shared edge
             for (int i = 0; i < 6; i++)
             {
-                if (GameTile.GetNeighborsArray(tiles, currentGameTile.x, currentGameTile.y)[i] == nextGameTile)
+                if (currentTile.GetNeighborsArray()[i] == nextGameTile)
                 {
                     return i;
                 }
@@ -1048,13 +1071,13 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
 
                     // If a GameTile has River adjacency
-                    if (currGameTile.hasFreshWater)
+                    if (currTile.hasFreshWater)
                     {
                         // For each of its neighbors
-                        foreach (GameTile neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                        foreach (GameTile neighbor in currTile.GetNeighborsArray())
                         {
                             // If they have river adjacency
                             if (neighbor is not null && neighbor.hasFreshWater)
@@ -1063,10 +1086,10 @@ public class WorldGenerator {
                                 bool sameEdges = true;
                                 
                                 List<int> edgesSetToTrue = new List<int>();
-                                // Add all the current GameTile's river edges set to True to a list.
+                                // Add all the current Tile's river edges set to True to a list.
                                 for (int index = 0; index < 6; index++)
                                 {
-                                    if (currGameTile.riverEdges[index] && index != GetSharedEdgeIndex(currGameTile, neighbor))
+                                    if (currTile.riverEdges[index] && index != GetSharedEdgeIndex(currTile, neighbor))
                                     {
                                         edgesSetToTrue.Add(index);
                                     }
@@ -1083,9 +1106,9 @@ public class WorldGenerator {
 
                                 if (sameEdges)
                                 {
-                                    // Deactivate their shared edge on both GameTile's ends.
-                                    currGameTile.SetRiverEdge(GetSharedEdgeIndex(currGameTile, neighbor), false);
-                                    neighbor.SetRiverEdge(GetSharedEdgeIndex(neighbor, currGameTile), false);
+                                    // Deactivate their shared edge on both Tile's ends.
+                                    currTile.SetRiverEdge(GetSharedEdgeIndex(currTile, neighbor), false);
+                                    neighbor.SetRiverEdge(GetSharedEdgeIndex(neighbor, currTile), false);
                                 }
                             }
                         }
@@ -1102,17 +1125,17 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
                     bool isAdjacentToCoat = false;
 
                     // If a GameTile has River Adjacency
-                    if (currGameTile.hasFreshWater)
+                    if (currTile.hasFreshWater)
                     {
                         int index = 0;
                         int edgeAdjacentToCoast;
                         // Figure out where each edge is at
                         
-                        foreach (GameTile neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                        foreach (GameTile neighbor in currTile.GetNeighborsArray())
                         {
                             // if Neighbor is Coast
                             if (neighbor is not null && neighbor.biome == Biome.Coast)
@@ -1122,47 +1145,47 @@ public class WorldGenerator {
                                 // EdgeAdjacentToCoast
                                 edgeAdjacentToCoast = index;
                                 // Set it to False
-                                currGameTile.SetRiverEdge(edgeAdjacentToCoast, false);
+                                currTile.SetRiverEdge(edgeAdjacentToCoast, false);
                             }
                             index++;
                         }
 
                         if (isAdjacentToCoat)
                         {
-                            // Check through the GameTile's river edges
+                            // Check through the Tile's river edges
                             for (int i = 0; i < 6; i++)
                             {
                                 // If this edge is Set to True.
-                                if (currGameTile.riverEdges[i])
+                                if (currTile.riverEdges[i])
                                 {
                                     // If this edge is 5 and the GameTile towards this edge is not in the River Path
-                                    if (i == 5 && !GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[5].hasFreshWater)
+                                    if (i == 5 && !currTile.GetNeighborsArray()[5].hasFreshWater)
                                     {
                                         // If Both it's neighboring edges don't lead to a GameTile on the River Path
-                                        if (!GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[4].hasFreshWater && !GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[0].hasFreshWater)
+                                        if (!currTile.GetNeighborsArray()[4].hasFreshWater && !currTile.GetNeighborsArray()[0].hasFreshWater)
                                         {
                                             // Then set the isolated river edge to false.
-                                            currGameTile.SetRiverEdge(5, false);
+                                            currTile.SetRiverEdge(5, false);
                                         }
                                     } 
                                     // If this edge is 0 and the GameTile towards this edge is not in the River Path
-                                    else if (i == 0 && !GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[0].hasFreshWater)
+                                    else if (i == 0 && !currTile.GetNeighborsArray()[0].hasFreshWater)
                                     {
                                         // If Both it's neighboring edges don't lead to a GameTile on the River Path
-                                        if (!GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[5].hasFreshWater && !GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[1].hasFreshWater)
+                                        if (!currTile.GetNeighborsArray()[5].hasFreshWater && !currTile.GetNeighborsArray()[1].hasFreshWater)
                                         {
                                             // Then set the isolated river edge to false.
-                                            currGameTile.SetRiverEdge(0, false);
+                                            currTile.SetRiverEdge(0, false);
                                         }
                                     }
                                     // If any other number and the GameTile towards this edge is not in the River Path
-                                    else if (!GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[i].hasFreshWater)
+                                    else if (!currTile.GetNeighborsArray()[i].hasFreshWater)
                                     {
                                         // If Both it's neighboring edges don't lead to a GameTile on the River Path
-                                        if (!GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[i - 1].hasFreshWater && !GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[i + 1].hasFreshWater)
+                                        if (!currTile.GetNeighborsArray()[i - 1].hasFreshWater && !currTile.GetNeighborsArray()[i + 1].hasFreshWater)
                                         {
                                             // Then set the isolated river edge to false.
-                                            currGameTile.SetRiverEdge(i, false);
+                                            currTile.SetRiverEdge(i, false);
                                         }
                                     }
                                 }
@@ -1175,26 +1198,26 @@ public class WorldGenerator {
             }
         }
 
-        /* Makes sure that all GameTile's adjacent to River's have Fresh Water Access set to True.  */
+        /* Makes sure that all Tile's adjacent to River's have Fresh Water Access set to True.  */
         void AssignRemainingFreshWaterAccess()
         {
             for (int x = 0; x < tiles.Length; x++)
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
                     
-                    if (currGameTile.hasFreshWater)
+                    if (currTile.hasFreshWater)
                     {
                         int edge = 0; // Keep track of which neighbor
-                        foreach (GameTile neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                        foreach (GameTile neighbor in currTile.GetNeighborsArray())
                         {
-                            if (neighbor is not null && currGameTile.riverEdges[edge] && neighbor.IsLand())
+                            if (neighbor is not null && currTile.riverEdges[edge] && neighbor.IsLand())
                             {
                                 // Set the opposing edge to true
-                                GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[edge].SetRiverEdge((edge + 3) % 6, true);
+                                currTile.GetNeighborsArray()[edge].SetRiverEdge((edge + 3) % 6, true);
                                 // Set the neighbor's fresh water access to true.
-                                GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y)[edge].SetHasFreshWater(true);
+                                currTile.GetNeighborsArray()[edge].SetHasFreshWater(true);
                             }
                             edge++;
                         }
@@ -1203,7 +1226,7 @@ public class WorldGenerator {
                         bool hasRiverEdges = false;
                         for (int i = 0; i < 6; i++)
                         {
-                            if (currGameTile.riverEdges[i])
+                            if (currTile.riverEdges[i])
                             {
                                 hasRiverEdges = true;
                                 break;
@@ -1214,7 +1237,7 @@ public class WorldGenerator {
                         if (!hasRiverEdges)
                         {
                             // Remove it's fresh water access
-                            currGameTile.SetHasFreshWater(false);
+                            currTile.SetHasFreshWater(false);
                         }
                     }
                 }
@@ -1243,18 +1266,18 @@ public class WorldGenerator {
                 {
                     for (int y = 0; y < tiles[0].Length; y++)
                     {
-                        GameTile currGameTile = tiles[x][y];
+                        GameTile currTile = tiles[x][y];
                         
                         // If it is Land, and it is not Snow, and it is not Desert, and it doesn't have a Mountain
-                        if (currGameTile.IsLand() && currGameTile.biome != Biome.Snow && currGameTile.biome != Biome.Desert &&
-                            currGameTile.terrain != Terrain.Mountain)
+                        if (currTile.IsLand() && currTile.biome != Biome.Snow && currTile.biome != Biome.Desert &&
+                            currTile.terrain != Terrain.Mountain)
                         {
                             if (random.NextInt(0, 100) < 15)
                             {
                                 // Add a Woods
-                                currGameTile.SetFeature(Feature.Woods);
+                                currTile.SetFeature(Feature.Woods);
                                 // Add it to our Queue
-                                woodsQueue.Enqueue(currGameTile);
+                                woodsQueue.Enqueue(currTile);
                             }
                         }
                     }
@@ -1264,9 +1287,9 @@ public class WorldGenerator {
             // Small chance to spread to nearby Woods
             while (woodsQueue.Count > 0)
             {
-                GameTile currGameTile = woodsQueue.Dequeue();
+                GameTile currTile = woodsQueue.Dequeue();
 
-                foreach (GameTile neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                foreach (GameTile neighbor in currTile.GetNeighborsArray())
                 {
                     // If neighbor is not null, if it is land, if it is not a Mountain, if it is not Snow or Desert
                     if (neighbor is not null && neighbor.IsLand() && neighbor.terrain != Terrain.Mountain &&
@@ -1274,7 +1297,7 @@ public class WorldGenerator {
                     {
                         if (random.NextInt(0, 100) < 50)
                         {
-                            currGameTile.SetFeature(Feature.Woods);
+                            currTile.SetFeature(Feature.Woods);
                         }
                     }
                 }
@@ -1294,21 +1317,21 @@ public class WorldGenerator {
                 {
                     for (int y = 0; y < tiles[0].Length; y++)
                     {
-                        GameTile currGameTile = tiles[x][y];
+                        GameTile currTile = tiles[x][y];
 
                         // If the GameTile is adjacent to River, if it's Desert, and if it's Flat
-                        if (currGameTile.HasRiver() && currGameTile.biome == Biome.Desert && currGameTile.terrain == Terrain.Flat)
+                        if (currTile.HasRiver() && currTile.biome == Biome.Desert && currTile.terrain == Terrain.Flat)
                         {
                             // Set it to Foodplains
-                            currGameTile.SetFeature(Feature.Floodplains);
+                            currTile.SetFeature(Feature.Floodplains);
                         } 
                         // If the GameTile is adjacent to River, if it's Plains or Grassland, and if it's Flat
-                        else if (currGameTile.HasRiver() &&
-                                 (currGameTile.biome == Biome.Plains || currGameTile.biome == Biome.Grassland) && currGameTile.terrain == Terrain.Flat)
+                        else if (currTile.HasRiver() &&
+                                 (currTile.biome == Biome.Plains || currTile.biome == Biome.Grassland) && currTile.terrain == Terrain.Flat)
                         {
 
                             bool isAdjacentToAnotherFloodplain = false;
-                            foreach (GameTile neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                            foreach (GameTile neighbor in currTile.GetNeighborsArray())
                             {
                                 if (neighbor is not null && neighbor.feature == Feature.Floodplains)
                                 {
@@ -1323,9 +1346,9 @@ public class WorldGenerator {
                                 if (probability < 10)
                                 {
                                     // Set it to Floodplains
-                                    currGameTile.SetFeature(Feature.Floodplains);
+                                    currTile.SetFeature(Feature.Floodplains);
                                     // Add it to Floodplains Queue
-                                    floodPlainsQueue.Enqueue(currGameTile);
+                                    floodPlainsQueue.Enqueue(currTile);
                                 }
                             }
                         }
@@ -1335,9 +1358,9 @@ public class WorldGenerator {
 
             while (floodPlainsQueue.Count > 0)
             {
-                GameTile currGameTile = floodPlainsQueue.Dequeue();
+                GameTile currTile = floodPlainsQueue.Dequeue();
 
-                foreach (GameTile neighbor in GameTile.GetNeighborsArray(tiles, currGameTile.x, currGameTile.y))
+                foreach (GameTile neighbor in currTile.GetNeighborsArray())
                 {
                     // If neighbor is not null, if its land, if it's next to a river, if it's plains or grassland, and if its flat.
                     if (neighbor is not null && neighbor.HasRiver() && neighbor.IsLand() &&
@@ -1359,15 +1382,15 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
 
                     // If the GameTile is Grassland and Flat.
-                    if (currGameTile.biome == Biome.Grassland && currGameTile.terrain == Terrain.Flat && !currGameTile.HasRiver())
+                    if (currTile.biome == Biome.Grassland && currTile.terrain == Terrain.Flat && !currTile.HasRiver())
                     {
                         if (random.NextInt(0, 100) < 5)
                         {
                             // Set it to Marsh
-                            currGameTile.SetFeature(Feature.Marsh);
+                            currTile.SetFeature(Feature.Marsh);
                         }
                     }
                 }
@@ -1380,9 +1403,9 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
 
-                    if (currGameTile.biome == Biome.Plains && currGameTile.terrain != Terrain.Mountain && !currGameTile.HasRiver())
+                    if (currTile.biome == Biome.Plains && currTile.terrain != Terrain.Mountain && !currTile.HasRiver())
                     {
                         int probability = random.NextInt(0, 100);
                         // If it's right on the Ecuator
@@ -1391,7 +1414,7 @@ public class WorldGenerator {
                             // 80% Chance
                             if (probability < 80)
                             {
-                                currGameTile.SetFeature(Feature.Rainforest);
+                                currTile.SetFeature(Feature.Rainforest);
                             }
                         }
                         else
@@ -1402,7 +1425,7 @@ public class WorldGenerator {
                             int distanceFactor = distanceToEquator * 5;
                             if (probability + distanceFactor < 60)
                             {
-                                currGameTile.SetFeature(Feature.Rainforest);
+                                currTile.SetFeature(Feature.Rainforest);
                             }
                         }
                         
@@ -1421,14 +1444,14 @@ public class WorldGenerator {
             {
                 for (int y = 0; y < tiles[0].Length; y++)
                 {
-                    GameTile currGameTile = tiles[x][y];
+                    GameTile currTile = tiles[x][y];
 
                     // If it's Desert, if It's Flat, and if it's not on a River.
-                    if (currGameTile.biome == Biome.Desert && currGameTile.terrain == Terrain.Flat && !currGameTile.HasRiver())
+                    if (currTile.biome == Biome.Desert && currTile.terrain == Terrain.Flat && !currTile.HasRiver())
                     {
                         if (random.NextInt(0, 100) < 15)
                         {
-                            currGameTile.SetFeature(Feature.Oasis);
+                            currTile.SetFeature(Feature.Oasis);
                         }
                     }
                 }
@@ -1460,8 +1483,8 @@ public class WorldGenerator {
         {
             for (int x = tiles.Length/4; x < tiles.Length * 3/4; x++)
             {
-                GameTile currGameTile = tiles[x][y];
-                if (currGameTile.HasRiver() && currGameTile.IsWalkable())
+                GameTile currTile = tiles[x][y];
+                if (currTile.HasRiver() && currTile.IsWalkable())
                 {
                     possiblePoints.Add(new Point(x, y)); //adds tile if 1. next to river 2. is land 3.is not mountain
                 }
