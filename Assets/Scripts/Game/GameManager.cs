@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -11,7 +10,17 @@ using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : NetworkBehaviour {
+    private static GameManager _instance;
+    public static GameManager Instance {
+        get {
+            if (_instance == null) {
+                _instance = FindObjectOfType<GameManager>();
+            }
+            return _instance;
+        }
+    }
+
     private Game game;
     private bool isSinglePlayer = true;
     private bool isHost = false;
@@ -21,22 +30,31 @@ public class GameManager : MonoBehaviour {
     private bool isInGame = false;
     private double lastUpdateTime = (double)0;
 
-    private void Awake()
-    {
-        DontDestroyOnLoad(gameObject); // Keeps this object across scenes (GameUI refers to this)
+    private void Awake() {
+        if (_instance != null && _instance != this) {
+            Destroy(gameObject);
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnEnable() {
+        if (NetworkManager.Singleton != null) {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        }
+    }
+
+    private void OnDisable() {
+        if (NetworkManager.Singleton != null) {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+        }
     }
 
     void Start() {
         lastUpdateTime = Util.GetUnixTimeMilliseconds();
     }
 
-    void Update() {
-
-    }
-
-    /* -----------------------------------------------
-        Start Singleplayer Game
-    ----------------------------------------------- */
     /* -----------------------------------------------
         Host Multiplayer Game
     ----------------------------------------------- */
@@ -44,7 +62,6 @@ public class GameManager : MonoBehaviour {
         isSinglePlayer = false;
         isHost = true;
 
-        // Create Game + World
         List<Civilization> civs = new List<Civilization>();
         civs.Add(new Civilization("p1"));
         civs.Add(new Civilization("p2"));
@@ -64,12 +81,11 @@ public class GameManager : MonoBehaviour {
             if (!AuthenticationService.Instance.IsSignedIn)
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-            Allocation a = await RelayService.Instance.CreateAllocationAsync(2); // Up to 2 players
+            Allocation a = await RelayService.Instance.CreateAllocationAsync(2);
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(a.AllocationId);
 
             Debug.Log($"Relay Created! Join Code: {joinCode}");
 
-            // Set up Transport
             RelayServerData relayServerData = new RelayServerData(a, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartHost();
@@ -82,7 +98,6 @@ public class GameManager : MonoBehaviour {
             return null;
         }
     }
-
 
     /* -----------------------------------------------
         Join Multiplayer Game
@@ -106,16 +121,31 @@ public class GameManager : MonoBehaviour {
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
             Debug.Log($"Joined Relay with Code: {joinCode}");
 
-            // Set up Transport
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-
-            NetworkManager.Singleton.StartClient(); // Start client mode
+            NetworkManager.Singleton.StartClient();
         }
         catch (System.Exception e)
         {
             Debug.LogError($"Failed to Join Relay: {e.Message}");
         }
     }
-}
 
+    /* -----------------------------------------------
+        Multiplayer Communication
+    ----------------------------------------------- */
+    private void OnClientConnected(ulong clientId)
+    {
+        Debug.Log($"OnClientConnected triggered for clientId: {clientId}");
+
+        if (NetworkManager.Singleton.IsHost) {  
+            Debug.Log($"Client {clientId} joined the game! (Host Perspective)");
+            NotifyClientJoinedClientRpc(clientId);
+        }
+    }
+
+    [ClientRpc]
+    private void NotifyClientJoinedClientRpc(ulong clientId) {
+        Debug.Log($"Client {NetworkManager.Singleton.LocalClientId} received join notification for Client {clientId}");
+    }
+}
