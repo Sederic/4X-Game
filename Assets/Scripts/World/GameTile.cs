@@ -82,22 +82,22 @@ public class GameTile
         // Define offsets for hexagonal grid
         int[][] evenRowOffsets = new int[][]
         {
-            new int[] {  0, -1 }, // Top
-            new int[] { -1,  1 }, // Top-Right
-            new int[] {  1,  1 }, // Bottom-Right
-            new int[] {  0,  1 }, // Bottom
-            new int[] {  1,  0 }, // Bottom-Left
-            new int[] { -1,  0 }, // Top-Left
+            new int[] {  -1, 0 },  // Top
+            new int[] { 0,  1 },   // Top-Right
+            new int[] {  1,  1 },  // Bottom-Right
+            new int[] {  1,  0 },  // Bottom
+            new int[] {  1,  -1 }, // Bottom-Left
+            new int[] { 0,  -1 },  // Top-Left
         };
 
         int[][] oddRowOffsets = new int[][]
         {
-            new int[] {  0, -1 }, // Top
-            new int[] { -1,  0 }, // Top-Right
-            new int[] {  1,  0 }, // Bottom-Right
-            new int[] {  0,  1 }, // Bottom
-            new int[] {  1, -1 }, // Bottom-Left
-            new int[] { -1, -1 }, // Top-Left
+            new int[] {  -1, 0 },  // Top
+            new int[] { -1,  1 },  // Top-Right
+            new int[] {  0,  1 },  // Bottom-Right
+            new int[] {  1,  0 },  // Bottom
+            new int[] {  0,  -1 }, // Bottom-Left
+            new int[] { -1,  -1 }, // Top-Left
         };
 
         // Use the correct offset list based on the row index
