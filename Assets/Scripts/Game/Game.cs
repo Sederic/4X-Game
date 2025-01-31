@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
+using Newtonsoft.Json;
 
 public class Game {
     private static Game _instance;
@@ -29,18 +29,10 @@ public class Game {
         world = new World(seed, civs.Count);
         Turn0();
 
-        // Game UI object
-        UI = UnityEngine.Object.FindObjectOfType<GameUI>();
-        if (UI == null)
-        {
-            await LoadGameSceneAsync();
-        }
-
-        // Set Civ
         SetCiv(civs[0]);
 
+        await SetupUI();
         // Render game
-        UI.SetUpWorldCanvas();
         UI.RenderGame();
     }
 
@@ -72,6 +64,49 @@ public class Game {
             SpawnUnit(warriorTile, civs[i], UnitType.Warrior);
         }
     }
+
+    /* -----------------------------------------------
+
+    ----------------------------------------------- */
+    public async Task SetupUI()
+    {
+        UI = UnityEngine.Object.FindObjectOfType<GameUI>();
+        if (UI == null)
+        {
+            await LoadGameSceneAsync();
+        }
+        UI.SetUpWorldCanvas();
+    }
+
+    public void ReinitializeFromJson(byte[] gameStateJson) {
+        Debug.Log("Reinitializing Game from JSON...");
+
+        GameStateData gameState = GameStateData.Deserialize(gameStateJson);
+        if (gameState == null) {
+            Debug.LogError("Failed to deserialize game state!");
+            return;
+        }
+
+        // Reset Game State
+        gameTurn = gameState.gameTurn;
+        isSinglePlayer = gameState.isSinglePlayer;
+
+        // Recreate World
+        world = new World(gameState.world, gameState);
+
+        // // Recreate Units
+        // foreach (var unitData in gameState.units) {
+        //     if (civDictionary.TryGetValue(unitData.civID, out Civilization civ) &&
+        //         tileDictionary.TryGetValue((unitData.tileX, unitData.tileY), out GameTile tile)) {
+        //         UnitFactory.TryCreateUnit((UnitType)Enum.Parse(typeof(UnitType), unitData.unitType), tile, civ, out Unit unit);
+        //         unit.ID = unitData.unitID;
+        //     }
+        // }
+
+        UI.RenderGame(); // Refresh UI
+    }
+
+
 
 
     /* -----------------------------------------------

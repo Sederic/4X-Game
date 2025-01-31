@@ -46,6 +46,24 @@ public class GameTile
         resource = Resource.None;
         tileImprovement = TileImprovement.NoFeature;
     }
+    
+    public GameTile(GameTileData data, GameStateData gameState)
+    {
+        x = data.x;
+        y = data.y;
+        biome = data.biome;
+        terrain = data.terrain;
+        feature = data.feature;
+        resource = data.resource;
+        tileImprovement = data.tileImprovement;
+        riverEdges = data.riverEdges;
+        hasFreshWater = data.hasFreshWater;
+
+        // if (data.unitID.HasValue && unitDictionary.ContainsKey(data.unitID.Value))
+        // {
+        //     unit = unitDictionary[data.unitID.Value];
+        // }
+    }
 
     public static void SetAllTiles(GameTile[][] allTiles) { AllTiles = allTiles; }
 

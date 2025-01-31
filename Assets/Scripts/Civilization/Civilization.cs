@@ -9,7 +9,8 @@ public enum TileVisibility
 }
 
 public class Civilization {
-    public string name { get; private set; }
+    public int ID { get; private set; }
+    public string Name { get; private set; }
     public List<Unit> Units { get; private set; } = new List<Unit>();
 
     public int[][] TileVisibility { get; private set; }
@@ -18,7 +19,7 @@ public class Civilization {
     public static List<Civilization> AllCivs { get; private set; } = new List<Civilization>();
 
     public Civilization(string name) {
-        this.name = name;
+        Name = name;
 
         TileVisibility = new int[50][];
         for (int i=0; i<TileVisibility.Length; i++)
@@ -42,7 +43,7 @@ public class Civilization {
                 int visibility = prevVisibility;
                 
                 // units
-                if (tile.unit != null && tile.unit.civ.name == name)
+                if (tile.unit != null && tile.unit.civ.Name == Name)
                 {
                     visibility = 2;
                 }

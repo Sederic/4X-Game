@@ -1,5 +1,9 @@
+
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -8,6 +12,7 @@ using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour {
@@ -29,6 +34,10 @@ public class GameManager : NetworkBehaviour {
 
     private bool isInGame = false;
     private double lastUpdateTime = (double)0;
+    
+    // Temporary buffer to store chunks before reassembly
+    private List<byte> _receivedChunks = new List<byte>();
+    private const int ChunkSize = 1024;
 
     private void Awake() {
         if (_instance != null && _instance != this) {
@@ -81,12 +90,12 @@ public class GameManager : NetworkBehaviour {
             if (!AuthenticationService.Instance.IsSignedIn)
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-            Allocation a = await RelayService.Instance.CreateAllocationAsync(2);
-            string joinCode = await RelayService.Instance.GetJoinCodeAsync(a.AllocationId);
+            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(2);
+            string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
             Debug.Log($"Relay Created! Join Code: {joinCode}");
 
-            RelayServerData relayServerData = new RelayServerData(a, "dtls");
+            RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartHost();
 
@@ -107,7 +116,10 @@ public class GameManager : NetworkBehaviour {
         isHost = false;
         string joinCode = relayCode;
 
+        game = Game.Instance;
         await JoinRelay(joinCode);
+
+        await game.SetupUI();
     }
 
     private async Task JoinRelay(string joinCode)
@@ -150,26 +162,52 @@ public class GameManager : NetworkBehaviour {
         Debug.Log($"Client {NetworkManager.Singleton.LocalClientId} received join notification for Client {clientId}");
     }
 
-    /* -----------------------------------------------
-        Client Requests Board State from Host
-    ----------------------------------------------- */
     [ServerRpc(RequireOwnership = false)]
     void RequestBoardStateServerRpc(ulong clientId) {
         Debug.Log($"Client {clientId} requested the board state.");
 
         if (IsHost) {
-            SendBoardStateClientRpc("board state", clientId);
+            byte[] gameState = new GameStateData(game).Serialize();
+            int totalChunks = Mathf.CeilToInt((float)gameState.Length / ChunkSize);
+
+            // Send the data in chunks
+            for (int i = 0; i < totalChunks; i++) {
+                int startIndex = i * ChunkSize;
+                int chunkLength = Mathf.Min(ChunkSize, gameState.Length - startIndex);
+                byte[] chunk = new byte[chunkLength];
+                Array.Copy(gameState, startIndex, chunk, 0, chunkLength);
+
+                // Send each chunk with its index and total chunks
+                ReceiveBoardStateClientRpc(clientId, chunk, i, totalChunks);
+            }
+
+            Debug.Log($"Sent {totalChunks} chunks");
         }
     }
 
-    /* -----------------------------------------------
-        Host Sends Board State to Specific Client
-    ----------------------------------------------- */
     [ClientRpc]
-    void SendBoardStateClientRpc(string boardState, ulong clientId, ClientRpcParams clientRpcParams = default) {
-        if (NetworkManager.Singleton.LocalClientId == clientId) {
-            Debug.Log($"Received board state from host: {boardState}");
+    private void ReceiveBoardStateClientRpc(ulong clientId, byte[] chunkJson, int chunkIndex, int totalChunks) {
+        if (NetworkManager.Singleton.LocalClientId == clientId)
+        {
+            Debug.Log($"Client {NetworkManager.Singleton.LocalClientId} received the board state.");
+
+            // Store or append the chunk to a buffer
+            if (chunkIndex == 0) {
+                _receivedChunks = new List<byte>();
+            }
+
+            _receivedChunks.AddRange(chunkJson);
+
+            // Check if all chunks are received
+            if (chunkIndex == totalChunks - 1) {
+                Debug.Log("Received all chunks");
+                byte[] fullData = _receivedChunks.ToArray();
+                Game.Instance.ReinitializeFromJson(fullData);
+
+                Debug.Log($"Client {clientId} has successfully reassembled and loaded the board state.");
+            }
         }
+        
     }
 
 }

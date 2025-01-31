@@ -29,7 +29,7 @@ public class UnitPrefab : MonoBehaviour
     public void SetUnitPrefab(Unit unit, GameUI UI)
     {
         this.unit = unit;
-        unitButton.gameObject.SetActive(unit.civ.name == Game.Instance.civ.name);
+        unitButton.gameObject.SetActive(unit.civ.Name == Game.Instance.civ.Name);
         switch (unit.unitType)
         {
             // Civilian Units
