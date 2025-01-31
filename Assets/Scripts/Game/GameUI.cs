@@ -231,35 +231,70 @@ public class GameUI : MonoBehaviour
                         featureTilemap.SetTile(tilePosition, lakeTile);
                         break;
                 }
+            }
+        }
 
-                /* Rivers */
-                if (tile.hasFreshWater)
+        /* Rivers */
+        for (int x=0; x<tiles.Length; x++)
+        {
+            for (int y=0; y<tiles[0].Length; y++)
+            {
+                GameTile tile = tiles[x][y];
+                if (tile.hasFreshWater || true)
                 {
                     for (int i=0; i<3; i++) // only the 0-2 for each tile
                     {
-                        if (tile.riverEdges[i])
+                        // tile.riverEdges[i] 
+                        if (true)
                         {
-                            // Instiate Vector3 for Position at Formula for River Position
-                            Vector3 riverPosition = new Vector3(-1 * (float)(bigX +
-                                                                        Math.Pow(-1f,
-                                                                            Math.Pow(0f,
-                                                                                (5f - i) * (4f - i))) *
-                                                                        Math.Pow(0f, Math.Pow(0f, i % 3f)) *
-                                                                        tileWidth * 3 / 8),
-                                (float)(bigY + Math.Pow(-1f,
-                                        Math.Pow(0f, Math.Abs((i - 2f) * (i - 3f) * (i - 4f)))) *
-                                    (tileHeight / 4f + tileHeight / 4f *
-                                        Math.Abs(Math.Pow(0f, Math.Pow(0f, i % 3f)) - 1f))),
-                                0f);
+                            float[] angles = { 90f, 27f, -27f };
+                            Vector3 direction(float distance, float angle) {
+                                float radians = Mathf.Deg2Rad * angle;
+                                return distance * new Vector3(Mathf.Cos(radians), Mathf.Sin(radians), 0);
+                            }
 
-                            // Declare riverRotation variable
-                            Quaternion riverRotation; 
+                            // // Declare riverPosition variable
+                            // Vector3[] directions = new Vector3[]
+                            // {
+                            //     new Vector3(0, 1, 0),  // i=0 → Up
+                            //     new Vector3(Mathf.Cos(Mathf.Deg2Rad * 27), Mathf.Sin(Mathf.Deg2Rad * 27), 0) // i=1 → 60° (top right)
+                            //         + new Vector3()
+                            //     new Vector3(Mathf.Cos(Mathf.Deg2Rad * -27), Mathf.Sin(Mathf.Deg2Rad * -27), 0) // i=2 → 120° (bottom right)
+                            // };
+                            // float[] displacements = { 0.45f, 0.45f, 0.45f };
+                            // Vector3 riverPosition = tile.Pos + (directions[i] * displacements[i]);
 
-                            float[] rotations = { 0f, -63f, 63f };
-                            riverRotation = Quaternion.Euler(0f, 0f, rotations[i % 3]);
+                            // // Declare riverRotation variable
+                            // float[] rotations = { 90f, 120f, 150f };
+                            // Quaternion riverRotation = Quaternion.Euler(0f, 0f, rotations[i % 3]);
+
+                            float angle = angles[i]; // Hexagon angles (0, 60, 120, 180, 240, 300)
+                            float radians = Mathf.Deg2Rad * angle; // Convert to radians
+
+                            float radius = 0.45f;
+
+                            Vector3[] displacements = new Vector3[]
+                            {
+                                new Vector3(0, 0, 0),
+                                new Vector3(-0.035f, 0.035f, 0),
+                                new Vector3(-0.035f, -0.035f, 0)
+                            };
+
+                            float[] distances = { 0.47f, 0.45f, 0.45f };
+
+                            // Calculate position using trigonometry
+                            Vector3 position = tile.Pos + new Vector3(
+                                distances[i] * Mathf.Cos(radians),
+                                distances[i] * Mathf.Sin(radians),
+                                0
+                            ) + displacements[i];
+
+                            // Calculate rotation (perpendicular to edge)
+                            Quaternion rotation = Quaternion.Euler(0, 0, angle + 90);
 
                             // Instantiate as part of the Rivers obj in order to not clog up hierarchy
-                            GameObject riverPiece = Instantiate(riverSegment, riverPosition, riverRotation);
+                            // GameObject riverPiece = Instantiate(riverSegment, riverPosition, riverRotation);
+                            GameObject riverPiece = Instantiate(riverSegment, position, rotation);
                             riverPiece.transform.SetParent(riversParent.transform);
                         }
                     }

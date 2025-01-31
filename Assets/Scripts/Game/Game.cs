@@ -110,7 +110,7 @@ public class Game {
             UnitFactory.ReinitializeUnit(unitData, gameState);
         }
 
-        SetCiv(civs[1]); // TBD
+        SetCiv(civs[(civs[0].Name == "p2") ? 0 : 1]); // TBD
 
         UI.RenderGame(); // Refresh UI
     }
