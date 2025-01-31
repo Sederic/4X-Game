@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 3715514062791804551}
   - component: {fileID: 5470342288920254347}
   - component: {fileID: 1153969845092588876}
-  - component: {fileID: 637303110163065179}
   - component: {fileID: 5307256639627128551}
+  - component: {fileID: 7223501473054358781}
   m_Layer: 0
   m_Name: Unit Prefab
   m_TagString: Untagged
@@ -115,23 +115,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 25
   m_TargetDisplay: 0
---- !u!114 &637303110163065179
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 152829552671779283}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce203821d149ee842a41874ae749776b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 5470342288920254347}
-  warrior: {fileID: 21300000, guid: 3f59b29eaff417644a15d31236426e93, type: 3}
-  settler: {fileID: 21300000, guid: 99e726293c142bc4ca74735892aa5854, type: 3}
-  scout: {fileID: 21300000, guid: 5bdf65ab493764642872e369eff8eb0f, type: 3}
-  director: {fileID: 0}
 --- !u!114 &5307256639627128551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,6 +132,21 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &7223501473054358781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152829552671779283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ade405d5b26413ea6ac396224a20d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settler: {fileID: 21300000, guid: 99e726293c142bc4ca74735892aa5854, type: 3}
+  scout: {fileID: 21300000, guid: 5bdf65ab493764642872e369eff8eb0f, type: 3}
+  warrior: {fileID: 21300000, guid: 3f59b29eaff417644a15d31236426e93, type: 3}
 --- !u!1 &6182944759027315074
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,7 +267,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 637303110163065179}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnitPrefab, Assembly-CSharp
         m_MethodName: OnClick
         m_Mode: 1

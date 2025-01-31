@@ -25,7 +25,7 @@ public class Game {
         this.civs = civs;
         
         world = new World(seed, civs.Count);
-        Debug.Log("done");
+        Turn0();
 
         // Game UI object
         UI = UnityEngine.Object.FindObjectOfType<GameUI>();
@@ -49,13 +49,36 @@ public class Game {
 
     private void Turn0() {
         for (int i=0; i<civs.Count; i++) {
-            // civs[i]; world.spawnPoints[i];
+            int tileX = world.SpawnPoints[i].x;
+            int tileY = world.SpawnPoints[i].y;
+            GameTile settleTile = GameTile.AllTiles[tileX][tileY];
+            SpawnUnit(settleTile, civs[i], UnitType.Settler);
+
+            List<GameTile> possibleWarriorTiles = new List<GameTile>();
+            foreach (GameTile? tile in settleTile.GetNeighborsArray())
+            {
+                if (tile is not null && tile.IsWalkable())
+                {
+                    possibleWarriorTiles.Add(tile);
+                }
+            }
+            System.Random random = new System.Random();
+            GameTile warriorTile = possibleWarriorTiles[random.Next(0, possibleWarriorTiles.Count)];
+            SpawnUnit(warriorTile, civs[i], UnitType.Warrior);
         }
     }
-
 
     /* -----------------------------------------------
 
     ----------------------------------------------- */
+    public bool SpawnUnit(GameTile tile, Civilization civ, UnitType unitType)
+    {
+        return UnitFactory.TryCreateUnit(unitType, tile, civ, out Unit newUnit);
+    }
+    public bool SpawnUnit(int tileX, int tileY, int civID, string unitName)
+    {
+        return Enum.TryParse(unitName, out UnitType unitType)
+            && SpawnUnit(GameTile.AllTiles[tileX][tileY], Civilization.AllCivs[civID], unitType);
+    }
 
 }

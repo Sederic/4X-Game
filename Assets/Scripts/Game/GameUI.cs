@@ -75,11 +75,11 @@ public class GameUI : MonoBehaviour
     public Image settleButton;
 
     // Private Instance Attributes
-    private bool _needsDirection;
-    private Dictionary<GameTile, GameObject> settlementUIs = new Dictionary<GameTile, GameObject>();
-    private Dictionary<Unit, GameObject> units = new Dictionary<Unit, GameObject>();
-    private HashSet<Point> highlightedTiles = new HashSet<Point>();
-    private HashSet<Point> visibleTiles = new HashSet<Point>();
+    // private bool _needsDirection;
+    // private Dictionary<GameTile, GameObject> settlementUIs = new Dictionary<GameTile, GameObject>();
+    // private Dictionary<Unit, GameObject> Units = new Dictionary<Unit, GameObject>();
+    // private HashSet<Point> HighlightedTiles = new HashSet<Point>();
+    // private HashSet<Point> VisibleTiles = new HashSet<Point>();
 
     // Camera Values
     public bool _zoomedIn;
@@ -125,10 +125,14 @@ public class GameUI : MonoBehaviour
         RenderTilemaps();
         // RenderSettlementUI(gameWorld);
         // RenderTerritoryLines();
-        // RenderUnits();
+        RenderUnits();
         // RenderPlayerVision();
     }
 
+
+    /* ------------------------------------------------
+        TILEMAPS
+    ------------------------------------------------ */
     public void RenderTilemaps()
     {
         GameTile[][] tiles = Game.Instance.world.tiles;
@@ -252,6 +256,36 @@ public class GameUI : MonoBehaviour
         }
     }
 
+
+    /* ------------------------------------------------
+        UNITS
+    ------------------------------------------------ */
+    public void RenderUnits()
+    {
+        GameTile[][] tiles = Game.Instance.world.tiles;
+        for (int x=0; x<tiles.Length; x++)
+        {
+            for (int y=0; y<tiles[0].Length; y++)
+            {
+                Unit unit = tiles[x][y].unit;
+                if (unit is not null)
+                {
+                    Debug.Log("Unit: " + x.ToString() + ", " + y.ToString());
+                    // Calculate World Position of that Tile
+                    Vector3Int tilePosition = new Vector3Int(x, y, 0);
+                    Vector3 worldPosition = baseTilemap.CellToWorld(tilePosition);
+
+                    if (unit.unitPrefab is null)
+                    {
+                        GameObject unitOBJ = Instantiate(unitPrefab, unitsParent.transform);
+                        unit.SetUnitPrefab(unitOBJ.GetComponent<UnitPrefab>(), this);
+                    }
+                    unit.unitPrefab.transform.position = worldPosition;
+                }
+            }
+        }
+    }
+
     public void PositionCamera() {
 
     }
@@ -287,5 +321,21 @@ public class GameUI : MonoBehaviour
             mainCam.orthographicSize -= scroll * zoomSpeed;
             mainCam.orthographicSize = Mathf.Clamp(mainCam.orthographicSize, minZoom, maxZoom);
         }
+    }
+
+    /* Selects the Unit in the parameter, open's the unit window. */
+    public void SelectUnit(Unit unit)
+    {
+        // // Assign Selected Unit
+        // selectedUnit = unit;
+        
+        // // Set UnitWindow Active and Update its text
+        // OpenUnitWindow();
+
+        // if (!selectedUnit._passing && !selectedUnit._camping)
+        // {
+        //     // Display that Unit's possible moves through the Shading Tilemap (highlight tiles)
+        //     DisplayPossibleMoves(unit);
+        // }
     }
 }

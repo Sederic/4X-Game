@@ -31,6 +31,7 @@ public class GameTile
     public bool hasFreshWater { get; private set; } = false;
 
     public Settlement settlement { get; private set; }
+    public Unit unit { get; private set; }
 
     /// <summary>
     /// Initializes a new GameTile with the specified Biome.
@@ -239,4 +240,8 @@ public class GameTile
     public override bool Equals(object obj) { return (obj is GameTile otherGameTile) ? this == otherGameTile : false; }
     public override int GetHashCode() { return HashCode.Combine(x, y); }
 
+
+    /* -- Units -- */
+    public void SetUnit(Unit unit) { this.unit = unit; }
+    public void UnsetUnit() { this.unit = null; }
 }
