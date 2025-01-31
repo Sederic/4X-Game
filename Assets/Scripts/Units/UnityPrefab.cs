@@ -60,10 +60,11 @@ public class UnitPrefab : MonoBehaviour
 
     public void OnClick()
     {
+        Debug.Log($"Unit Clicked: {unit.tile.x}, {unit.tile.y}");
         if (!UI._zoomedIn)
         {
             UI.SelectUnit(unit);
-            // UI.selectedUnitPrefab = this.gameObject;
+            Debug.Log($"Unit Clicked: {unit.tile.x}, {unit.tile.y}");
         }
     }
 }

@@ -262,4 +262,25 @@ public class GameTile
     /* -- Units -- */
     public void SetUnit(Unit unit) { this.unit = unit; }
     public void UnsetUnit() { this.unit = null; }
+
+    /* -- Tilemap Location -- */
+    public Vector3Int TilemapLoc(int z=0) { return new Vector3Int(-x, y, z); } // camera should be -1
+    public static Vector3Int TilemapLoc(int x, int y, int z=0) { return new Vector3Int(-x, y, z); }
+    public static Vector3Int TilemapLoc(Point p, int z=0) { return new Vector3Int(-p.x, p.y, z); }
+
+    private Vector3? _Pos = null;
+    public Vector3 Pos
+    {
+        get
+        {
+            if (_Pos is null)
+            {
+                _Pos = Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc());
+            }
+            return _Pos.Value;
+        }
+    }
+    public Vector3 PosCamera() { return Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc(-1)); }
+    public static Vector3 Pos2(int x, int y, int z=0) { return Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc(x, y, z)); }
+    public static Vector3 Pos2(Point p, int z=0) { return Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc(p.x, p.y, z)); }
 }

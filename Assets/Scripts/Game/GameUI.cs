@@ -133,6 +133,12 @@ public class GameUI : MonoBehaviour
         // RenderTerritoryLines();
         RenderUnits();
         RenderPlayerVision(true);
+
+        // Start at Settler
+        List<Unit> units = Game.Instance.civ.Units;
+        Unit settler = (units[0].unitType == UnitType.Settler) ? units[0] : units[1];
+        SelectUnit(settler);
+        PositionCamera(settler.tile);
     }
 
 
@@ -154,7 +160,7 @@ public class GameUI : MonoBehaviour
                 double bigX = tileWidth * y * .75f;
                 double bigY = (float)(x * tileHeight + (tileHeight / 2) * (y % 2));
 
-                Vector3Int tilePosition = new Vector3Int(x, y, 0);
+                Vector3Int tilePosition = new Vector3Int(-x, y, 0);
 
                 /* Render Base Tiles */
                 switch (biome)
@@ -234,7 +240,7 @@ public class GameUI : MonoBehaviour
                         if (tile.riverEdges[i])
                         {
                             // Instiate Vector3 for Position at Formula for River Position
-                            Vector3 riverPosition = new Vector3((float)(bigX +
+                            Vector3 riverPosition = new Vector3(-1 * (float)(bigX +
                                                                         Math.Pow(-1f,
                                                                             Math.Pow(0f,
                                                                                 (5f - i) * (4f - i))) *
@@ -279,18 +285,15 @@ public class GameUI : MonoBehaviour
             {
                 for (int y=0; y<tiles[0].Length; y++)
                 {
-                    Vector3Int location = new Vector3Int(x, y, 0);
-                    visibilityTilemap.SetTile(location, shadingArray[civ.TileVisibility[x][y]]);
+                    visibilityTilemap.SetTile(tiles[x][y].TilemapLoc(), shadingArray[civ.TileVisibility[x][y]]);
                 }
             }
         }
         else
         {
-            foreach (Point point in civ.UpdatedTileVisibility)
+            foreach (Point p in civ.UpdatedTileVisibility)
             {
-                int x = point.x, y = point.y;
-                Vector3Int location = new Vector3Int(x, y);
-                visibilityTilemap.SetTile(location, shadingArray[civ.TileVisibility[x][y]]);
+                visibilityTilemap.SetTile(GameTile.TilemapLoc(p), shadingArray[civ.TileVisibility[p.x][p.y]]);
             }
             civ.ClearTileVisibilityList();
         }
@@ -310,26 +313,24 @@ public class GameUI : MonoBehaviour
                 Unit unit = tiles[x][y].unit;
                 if (unit is not null)
                 {
-                    Debug.Log("Unit: " + x.ToString() + ", " + y.ToString());
-                    // Calculate World Position of that Tile
-                    Vector3Int tilePosition = new Vector3Int(x, y, 0);
-                    Vector3 worldPosition = baseTilemap.CellToWorld(tilePosition);
-
                     if (unit.unitPrefab is null)
                     {
                         GameObject unitOBJ = Instantiate(unitPrefab, unitsParent.transform);
                         unit.SetUnitPrefab(unitOBJ.GetComponent<UnitPrefab>(), this);
                     }
-                    unit.unitPrefab.transform.position = worldPosition;
+                    unit.unitPrefab.transform.position = tiles[x][y].Pos;
                 }
             }
         }
     }
 
-    public void PositionCamera() {
-
+    /* ------------------------------------------------
+        CAMERA CONTROL
+    ------------------------------------------------ */
+    public void PositionCamera(GameTile tile) {
+        mainCam.transform.position = tile.PosCamera();
+        mainCam.orthographicSize = 4f;
     }
-
 
     /* Calls all the other Camera methods. */
     void CameraControl()
