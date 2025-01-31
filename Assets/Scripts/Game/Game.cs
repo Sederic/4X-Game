@@ -93,15 +93,24 @@ public class Game {
 
         // Recreate World
         world = new World(gameState.world, gameState);
+        gameState._tiles = world.tiles;
 
-        // // Recreate Units
-        // foreach (var unitData in gameState.units) {
-        //     if (civDictionary.TryGetValue(unitData.civID, out Civilization civ) &&
-        //         tileDictionary.TryGetValue((unitData.tileX, unitData.tileY), out GameTile tile)) {
-        //         UnitFactory.TryCreateUnit((UnitType)Enum.Parse(typeof(UnitType), unitData.unitType), tile, civ, out Unit unit);
-        //         unit.ID = unitData.unitID;
-        //     }
-        // }
+        // Recreate Civs
+        List<Civilization> civs = new List<Civilization>();
+        gameState._civsDict = new Dictionary<int, Civilization>();
+        foreach (var civ in gameState.civs.Values) {
+            Civilization newCiv = new Civilization(civ, gameState);
+            civs.Add(newCiv);
+            gameState._civsDict[newCiv.ID] = newCiv;
+        }
+
+        // Recreate Units
+        foreach (UnitData unitData in gameState.units.Values)
+        {
+            UnitFactory.ReinitializeUnit(unitData, gameState);
+        }
+
+        SetCiv(civs[1]); // TBD
 
         UI.RenderGame(); // Refresh UI
     }
@@ -124,7 +133,7 @@ public class Game {
     public bool SpawnUnit(int tileX, int tileY, int civID, string unitName)
     {
         return Enum.TryParse(unitName, out UnitType unitType)
-            && SpawnUnit(GameTile.AllTiles[tileX][tileY], Civilization.AllCivs[civID], unitType);
+            && SpawnUnit(GameTile.AllTiles[tileX][tileY], civs[civID], unitType);
     }
 
 }

@@ -16,9 +16,8 @@ public class Civilization {
     public int[][] TileVisibility { get; private set; }
     public List<Point> UpdatedTileVisibility { get; private set; } = new List<Point>();
 
-    public static List<Civilization> AllCivs { get; private set; } = new List<Civilization>();
-
     public Civilization(string name) {
+        ID = this.GetHashCode();
         Name = name;
 
         TileVisibility = new int[50][];
@@ -26,7 +25,17 @@ public class Civilization {
         {
             TileVisibility[i] = new int[100];
         }
+    }
 
+    public Civilization(CivilizationData civData, GameStateData gameState) {
+        ID = civData.civID;
+        Name = civData.civName;
+
+        TileVisibility = new int[50][];
+        for (int i=0; i<TileVisibility.Length; i++)
+        {
+            TileVisibility[i] = new int[100];
+        }
     }
 
     public void AddUnit(Unit unit) { Units.Add(unit); }
@@ -61,5 +70,4 @@ public class Civilization {
     }
     public void ClearTileVisibilityList() { UpdatedTileVisibility.Clear(); }
 
-    public static void SetAllCivs(List<Civilization> civs) { AllCivs = civs; }
 }

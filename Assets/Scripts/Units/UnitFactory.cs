@@ -24,4 +24,15 @@ public class UnitFactory
         newUnit = null;
         return false;
     }
+
+    public static void ReinitializeUnit(UnitData unit, GameStateData gameState)
+    {
+        Enum.TryParse<UnitType>(unit.unitType, out UnitType parsedUnitType);
+        if (!unitCreators.TryGetValue(parsedUnitType, out var creator)) { return; }
+
+        GameTile tile = gameState._tiles[unit.tileX][unit.tileY];
+        Civilization civ = gameState._civsDict[unit.civID];
+        Unit newUnit = creator(tile, civ);
+        newUnit.Reinitialize(unit, gameState);
+    }
 }

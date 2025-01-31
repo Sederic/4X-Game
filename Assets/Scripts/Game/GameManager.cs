@@ -75,7 +75,8 @@ public class GameManager : NetworkBehaviour {
         civs.Add(new Civilization("p1"));
         civs.Add(new Civilization("p2"));
 
-        int seed = 1000;
+        // int seed = 1000;
+        int seed = UnityEngine.Random.Range(0, int.MaxValue);
         await Game.Instance.Initialize(false, seed, civs);
         game = Game.Instance;
 

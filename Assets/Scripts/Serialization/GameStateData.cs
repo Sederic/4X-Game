@@ -11,6 +11,11 @@ public class GameStateData {
 
     public Dictionary<int, GameTileData> tiles;
     public Dictionary<int, CivilizationData> civs;
+    public Dictionary<int, UnitData> units;
+
+    // Unloaded
+    public GameTile[][] _tiles;
+    public Dictionary<int, Civilization> _civsDict;
 
     public GameStateData() {}
     public GameStateData(Game game) {
@@ -28,10 +33,16 @@ public class GameStateData {
         }
 
         // Initialize Civ Dictionary (Key: Civilization ID)
-        // civs = new Dictionary<int, CivilizationData>();
-        // foreach (var civ in game.civs) {
-        //     civs[civ.ID] = new CivilizationData(civ);
-        // }
+        civs = new Dictionary<int, CivilizationData>();
+        units = new Dictionary<int, UnitData>();
+        foreach (var civ in game.civs) {
+            civs[civ.ID] = new CivilizationData(civ);
+
+            // Unit Dictionary (Key: Unit ID)
+            foreach (var unit in civ.Units) {
+                units[unit.ID] = new UnitData(unit);
+            }
+        }
     }
 
     public byte[] Serialize() {

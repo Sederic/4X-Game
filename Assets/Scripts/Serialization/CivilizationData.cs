@@ -14,8 +14,8 @@ public class CivilizationData {
 
         // Store Unit IDs instead of actual Unit objects
         unitIDs = new List<int>();
-        // foreach (var unit in civ.units) {
-        //     unitIDs.Add(unit.ID);
-        // }
+        foreach (var unit in civ.Units) {
+            unitIDs.Add(unit.ID);
+        }
     }
 }

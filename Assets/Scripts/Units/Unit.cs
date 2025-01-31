@@ -21,6 +21,8 @@ public enum UnitType
 
 public class Unit
 {
+    public int ID { get; protected set; }
+
     public string Name { get; protected set; } // The Unit's name.
     public int BaseMP { get; protected set; } // A Unit's current Movement Points per turn.
     public int CurrMP { get; protected set; } // A Unit's remaining movement points this turn.
@@ -45,6 +47,7 @@ public class Unit
 
     public Unit(GameTile tile, Civilization civ)
     {
+        ID = GetHashCode();
         this.tile = tile;
         this.civ = civ;
         tile.SetUnit(this);
@@ -53,9 +56,17 @@ public class Unit
         Debug.Log("Unit: " + civ.Name + ": " + tile.x.ToString() + ", " + tile.y.ToString());
     }
 
-    /* -----------------------------------------------
-        Deserialization
-    ----------------------------------------------- */
+    public void Reinitialize(UnitData unit, GameStateData gameState)
+    {
+        ID = unit.unitID;
+        
+        CurrMP = unit.currMP;
+        Experience = unit.experience;
+        HasOrder = unit.hasOrder;
+        Exhausted = unit.exhausted;
+        Camping = unit.camping;
+        Passing = unit.passing;
+    }
     
 
     public void SetUnitPrefab(UnitPrefab unitPrefab, GameUI UI)
