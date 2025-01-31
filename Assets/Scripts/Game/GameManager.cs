@@ -134,13 +134,14 @@ public class GameManager : NetworkBehaviour {
     /* -----------------------------------------------
         Multiplayer Communication
     ----------------------------------------------- */
-    private void OnClientConnected(ulong clientId)
-    {
-        Debug.Log($"OnClientConnected triggered for clientId: {clientId}");
+    private void OnClientConnected(ulong clientId) {
+        Debug.Log($"Client {clientId} joined the game!");
 
         if (NetworkManager.Singleton.IsHost) {  
-            Debug.Log($"Client {clientId} joined the game! (Host Perspective)");
-            NotifyClientJoinedClientRpc(clientId);
+            Debug.Log($"Client {clientId} joined (Host Perspective)");
+        } else {
+            Debug.Log("Client connected, requesting board state...");
+            RequestBoardStateServerRpc(NetworkManager.Singleton.LocalClientId);
         }
     }
 
@@ -148,4 +149,27 @@ public class GameManager : NetworkBehaviour {
     private void NotifyClientJoinedClientRpc(ulong clientId) {
         Debug.Log($"Client {NetworkManager.Singleton.LocalClientId} received join notification for Client {clientId}");
     }
+
+    /* -----------------------------------------------
+        Client Requests Board State from Host
+    ----------------------------------------------- */
+    [ServerRpc(RequireOwnership = false)]
+    void RequestBoardStateServerRpc(ulong clientId) {
+        Debug.Log($"Client {clientId} requested the board state.");
+
+        if (IsHost) {
+            SendBoardStateClientRpc("board state", clientId);
+        }
+    }
+
+    /* -----------------------------------------------
+        Host Sends Board State to Specific Client
+    ----------------------------------------------- */
+    [ClientRpc]
+    void SendBoardStateClientRpc(string boardState, ulong clientId, ClientRpcParams clientRpcParams = default) {
+        if (NetworkManager.Singleton.LocalClientId == clientId) {
+            Debug.Log($"Received board state from host: {boardState}");
+        }
+    }
+
 }
