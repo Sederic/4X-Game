@@ -244,34 +244,13 @@ public class GameUI : MonoBehaviour
                 {
                     for (int i=0; i<3; i++) // only the 0-2 for each tile
                     {
-                        // tile.riverEdges[i] 
-                        if (true)
+                        if (tile.riverEdges[i])
+                        // if (true)
                         {
                             float[] angles = { 90f, 27f, -27f };
-                            Vector3 direction(float distance, float angle) {
-                                float radians = Mathf.Deg2Rad * angle;
-                                return distance * new Vector3(Mathf.Cos(radians), Mathf.Sin(radians), 0);
-                            }
-
-                            // // Declare riverPosition variable
-                            // Vector3[] directions = new Vector3[]
-                            // {
-                            //     new Vector3(0, 1, 0),  // i=0 → Up
-                            //     new Vector3(Mathf.Cos(Mathf.Deg2Rad * 27), Mathf.Sin(Mathf.Deg2Rad * 27), 0) // i=1 → 60° (top right)
-                            //         + new Vector3()
-                            //     new Vector3(Mathf.Cos(Mathf.Deg2Rad * -27), Mathf.Sin(Mathf.Deg2Rad * -27), 0) // i=2 → 120° (bottom right)
-                            // };
-                            // float[] displacements = { 0.45f, 0.45f, 0.45f };
-                            // Vector3 riverPosition = tile.Pos + (directions[i] * displacements[i]);
-
-                            // // Declare riverRotation variable
-                            // float[] rotations = { 90f, 120f, 150f };
-                            // Quaternion riverRotation = Quaternion.Euler(0f, 0f, rotations[i % 3]);
 
                             float angle = angles[i]; // Hexagon angles (0, 60, 120, 180, 240, 300)
                             float radians = Mathf.Deg2Rad * angle; // Convert to radians
-
-                            float radius = 0.45f;
 
                             Vector3[] displacements = new Vector3[]
                             {
@@ -280,12 +259,12 @@ public class GameUI : MonoBehaviour
                                 new Vector3(-0.035f, -0.035f, 0)
                             };
 
-                            float[] distances = { 0.47f, 0.45f, 0.45f };
+                            float[] radii = { 0.47f, 0.45f, 0.45f };
 
                             // Calculate position using trigonometry
                             Vector3 position = tile.Pos + new Vector3(
-                                distances[i] * Mathf.Cos(radians),
-                                distances[i] * Mathf.Sin(radians),
+                                radii[i] * Mathf.Cos(radians),
+                                radii[i] * Mathf.Sin(radians),
                                 0
                             ) + displacements[i];
 
