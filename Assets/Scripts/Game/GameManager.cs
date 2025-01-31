@@ -205,6 +205,7 @@ public class GameManager : NetworkBehaviour {
                 Game.Instance.ReinitializeFromJson(fullData);
 
                 Debug.Log($"Client {clientId} has successfully reassembled and loaded the board state.");
+                _receivedChunks.Clear();
             }
         }
         
