@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UnitPrefab : MonoBehaviour
 {
     private SpriteRenderer spriteRenderer;
+    private Button unitButton;
     private Unit unit;
     private GameUI UI;
 
@@ -17,6 +19,7 @@ public class UnitPrefab : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        unitButton = GetComponentInChildren<Button>(); 
         if (spriteRenderer == null)
         {
             Debug.LogError("Sprite Renderer Component on UnitPrefab not found");
@@ -26,6 +29,7 @@ public class UnitPrefab : MonoBehaviour
     public void SetUnitPrefab(Unit unit, GameUI UI)
     {
         this.unit = unit;
+        unitButton.gameObject.SetActive(unit.civ.name == Game.Instance.civ.name);
         switch (unit.unitType)
         {
             // Civilian Units
@@ -50,7 +54,8 @@ public class UnitPrefab : MonoBehaviour
 
     public void DestroyUnit()
     {
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+        // Destroy(gameObject);
     }
 
     public void OnClick()

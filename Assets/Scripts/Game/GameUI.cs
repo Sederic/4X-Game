@@ -107,6 +107,12 @@ public class GameUI : MonoBehaviour
 
     void Update()
     {
+        // Toggle vision on/off for testing
+        if (Input.GetKeyDown(KeyCode.Period))
+        {
+            visibilityTilemap.gameObject.SetActive(!visibilityTilemap.gameObject.activeSelf);
+        }
+
         CameraControl();
     }
 
@@ -126,7 +132,7 @@ public class GameUI : MonoBehaviour
         // RenderSettlementUI(gameWorld);
         // RenderTerritoryLines();
         RenderUnits();
-        // RenderPlayerVision();
+        RenderPlayerVision(true);
     }
 
 
@@ -253,6 +259,40 @@ public class GameUI : MonoBehaviour
                     }
                 }
             }
+        }
+    }
+
+    /* ------------------------------------------------
+        VISIBILITY
+    ------------------------------------------------ */
+    void RenderPlayerVision(bool updateAll=false)
+    {
+        // Tile[] shadingArray = { darkened, unexplored, null };
+        Tile[] shadingArray = { unexplored, unexplored, null };
+        GameTile[][] tiles = Game.Instance.tiles;
+        Civilization civ = Game.Instance.civ;
+        civ.UpdateTileVisibilityList();
+
+        if (updateAll)
+        {
+            for (int x=0; x<tiles.Length; x++)
+            {
+                for (int y=0; y<tiles[0].Length; y++)
+                {
+                    Vector3Int location = new Vector3Int(x, y, 0);
+                    visibilityTilemap.SetTile(location, shadingArray[civ.TileVisibility[x][y]]);
+                }
+            }
+        }
+        else
+        {
+            foreach (Point point in civ.UpdatedTileVisibility)
+            {
+                int x = point.x, y = point.y;
+                Vector3Int location = new Vector3Int(x, y);
+                visibilityTilemap.SetTile(location, shadingArray[civ.TileVisibility[x][y]]);
+            }
+            civ.ClearTileVisibilityList();
         }
     }
 

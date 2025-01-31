@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour {
         civs.Add(new Civilization("p1"));
         civs.Add(new Civilization("p2"));
 
-        int seed = 100;
+        int seed = 1000;
         await Game.Instance.Initialize(false, seed, civs);
         game = Game.Instance;
 

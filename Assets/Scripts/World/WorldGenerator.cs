@@ -386,7 +386,7 @@ public class WorldGenerator {
         void DetermineCoasts()
         {
             List<GameTile> coastFrontier = new List<GameTile>();
-            int coastDepth = 3;
+            int coastDepth = 2;
 
             for (int i=0; i<coastDepth; i++)
             {

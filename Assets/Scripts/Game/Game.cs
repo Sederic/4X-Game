@@ -14,9 +14,11 @@ public class Game {
     public GameUI UI;
 
     public World world { get; private set; }
+    public GameTile[][] tiles { get { return world.tiles; } }
     public List<Civilization> civs { get; private set; }
     public int gameTurn { get; private set; } = 0;
     public bool isSinglePlayer { get; private set; }
+    public Civilization civ { get; private set; }
 
     private Game() {}
     
@@ -33,6 +35,9 @@ public class Game {
         {
             await LoadGameSceneAsync();
         }
+
+        // Set Civ
+        SetCiv(civs[0]);
 
         // Render game
         UI.SetUpWorldCanvas();
@@ -67,6 +72,12 @@ public class Game {
             SpawnUnit(warriorTile, civs[i], UnitType.Warrior);
         }
     }
+
+
+    /* -----------------------------------------------
+
+    ----------------------------------------------- */
+    public void SetCiv(Civilization civ) { this.civ = civ; }
 
     /* -----------------------------------------------
 

@@ -50,7 +50,7 @@ public class Unit
         tile.SetUnit(this);
         civ.AddUnit(this);
 
-        Debug.Log("Unit: " + tile.x.ToString() + ", " + tile.y.ToString());
+        Debug.Log("Unit: " + civ.name + ": " + tile.x.ToString() + ", " + tile.y.ToString());
     }
 
     public void SetUnitPrefab(UnitPrefab unitPrefab, GameUI UI)
