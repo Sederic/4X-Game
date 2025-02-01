@@ -24,6 +24,7 @@ public class Unit
     public int ID { get; protected set; }
 
     public string Name { get; protected set; } // The Unit's name.
+    public int Vision { get; protected set; } = 2; // Vision # of tiles
     public int BaseMP { get; protected set; } // A Unit's current Movement Points per turn.
     public int CurrMP { get; protected set; } // A Unit's remaining movement points this turn.
     public int Supplies { get; protected set; } // Determines how many turns it can stay out of your territory.

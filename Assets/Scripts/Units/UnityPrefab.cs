@@ -61,6 +61,9 @@ public class UnitPrefab : MonoBehaviour
     public void OnClick()
     {
         Debug.Log($"Unit Clicked: {unit.tile.x}, {unit.tile.y}");
+        foreach (var t in unit.tile.GetNeighborsArray()) {
+            Debug.Log($"Neighbor: {t.x}, {t.y}");
+        }
         if (!UI._zoomedIn)
         {
             UI.SelectUnit(unit);

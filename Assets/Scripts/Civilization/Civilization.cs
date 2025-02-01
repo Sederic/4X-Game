@@ -67,6 +67,36 @@ public class Civilization {
                 }
             }
         }
+
+        // Units
+        foreach (var unit in Units) {
+            int vision = unit.Vision;
+            int blockingCount = unit.tile.UnitBlockingCount();
+            List<(GameTile, int)> frontier = new List<(GameTile, int)>();
+            for (int i=0; i<6; i++) { frontier.Add((unit.tile, i)); }
+            while (vision-- > 0) {
+                List<(GameTile, int)> newFrontier = new List<(GameTile, int)>();
+                foreach ((GameTile tile, int dir) in frontier) {
+                    GameTile?[] neighbors = tile.GetNeighborsArray();
+                    for (int i=0; i<6; i++) {
+                        GameTile? t = neighbors[i];
+                        if (t != null && (dir == i || dir == (i + 1) % 6 || dir == (i - 1) % 6)) {
+                            int x = t.x;
+                            int y = t.y;
+
+                            if (TileVisibility[x][y] != 2) {
+                                TileVisibility[x][y] = 2;
+                                UpdatedTileVisibility.Add(new Point(x, y));
+                            }
+
+                            if (blockingCount >= t.BlockingCount() && (unit.Vision != vision + 1 || dir == i))
+                                newFrontier.Add((t, dir));
+                        }
+                    }
+                }
+                frontier = newFrontier;
+            }
+        }
     }
     public void ClearTileVisibilityList() { UpdatedTileVisibility.Clear(); }
 

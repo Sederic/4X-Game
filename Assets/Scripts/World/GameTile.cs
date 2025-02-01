@@ -101,7 +101,7 @@ public class GameTile
         };
 
         // Use the correct offset list based on the row index
-        int[][] offsets = (tileX % 2 == 0) ? evenRowOffsets : oddRowOffsets;
+        int[][] offsets = (tileY % 2 == 0) ? evenRowOffsets : oddRowOffsets;
 
         for (int i=0; i<offsets.Length; i++)
         {
@@ -283,4 +283,18 @@ public class GameTile
     public Vector3 PosCamera() { return Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc(-1)); }
     public static Vector3 Pos2(int x, int y, int z=0) { return Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc(x, y, z)); }
     public static Vector3 Pos2(Point p, int z=0) { return Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc(p.x, p.y, z)); }
+
+    /* -- Vision -- */
+    public int UnitBlockingCount()
+    {
+        if (terrain == Terrain.Mountain) return 100;
+        return ((terrain == Terrain.Hill) ? 1 : 0);
+    }
+    public int BlockingCount()
+    {
+        if (terrain == Terrain.Mountain) return 100;
+        return ((terrain == Terrain.Hill) ? 1 : 0)
+             + ((feature == Feature.Woods) ? 1 : 0)
+             + ((feature == Feature.Rainforest) ? 1 : 0);
+    }
 }
