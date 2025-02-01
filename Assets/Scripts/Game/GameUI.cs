@@ -378,19 +378,91 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    /* Selects the Unit in the parameter, open's the unit window. */
+
+    /* ------------------------------------------------
+        SELECT UNIT
+    ------------------------------------------------ */
     public void SelectUnit(Unit unit)
     {
-        // // Assign Selected Unit
-        // selectedUnit = unit;
+        HidePossibleMoves();
+        // Assign Selected Unit
+        selectedUnit = unit;
         
-        // // Set UnitWindow Active and Update its text
+        // Set UnitWindow Active and Update its text
         // OpenUnitWindow();
 
-        // if (!selectedUnit._passing && !selectedUnit._camping)
-        // {
-        //     // Display that Unit's possible moves through the Shading Tilemap (highlight tiles)
-        //     DisplayPossibleMoves(unit);
-        // }
+        if (!unit.Camping && !unit.Passing)
+        {
+            ShowPossibleMoves();
+        }
+    }
+
+    private List<GameTile> ShadingHighlight = new List<GameTile>();
+    public void ShowPossibleMoves()
+    {
+        // Display that Unit's possible moves through the Shading Tilemap (highlight tiles)
+        ShadingHighlight = selectedUnit.PossibleMovement;
+        foreach (GameTile t in ShadingHighlight) {
+            shadingTilemap.SetTile(t.TilemapLoc(), highlight);
+        }
+    }
+    public void HidePossibleMoves()
+    {
+        foreach (GameTile t in ShadingHighlight) {
+            shadingTilemap.SetTile(t.TilemapLoc(), null);
+        }
+    }
+
+    public void MoveSelectedUnit()
+    {
+        if (selectedUnit == null) return;
+        if (Input.GetMouseButtonDown(1)) // 1 - Right Mouse button
+        {
+            Vector3 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
+            mousePos.z = 0;
+            
+            Vector3Int cellPosition = shadingTilemap.WorldToCell(mousePos);
+
+            // If that location is highlighted
+            if (shadingTilemap.HasTile(cellPosition))
+            {
+                // Move Unit in GM
+                gm.MoveUnit(selectedUnit, new Point(cellPosition.y, cellPosition.x));
+                
+                // Reposition Selected Unit prefab
+                RenderUnits();
+                
+                // Reset previous moves
+                HidePossibleMoves();
+                ShowPossibleMoves();
+                
+                // Update Unit Window Values
+                // OpenUnitWindow();
+
+                // If Selected Unit can no longer move (out of movement points)
+                if (!selectedUnit.canMove())
+                {
+                    RemovePossibleMoves();
+                }
+                
+                // Update End Turn Button in case player can now end turn
+                // UpdateEndTurnButton();
+                
+                // Render new visible tiles
+                RenderPlayerVision();
+            }
+        }
+    }
+    public void MoveSelectedUnitConfirmed()
+    {
+        
+    }
+
+    /* ------------------------------------------------
+        NETWORK - UNIT
+    ------------------------------------------------ */
+    public void Network_UpdateUnit()
+    {
+        
     }
 }

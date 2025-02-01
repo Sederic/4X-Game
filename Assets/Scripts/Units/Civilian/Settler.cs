@@ -9,8 +9,10 @@ public class Settler : CivilianUnit
     {
         unitType = UnitType.Settler;
         Name = unitType.ToString();
-
+        
+        Vision = 3;
         BaseMP = 2;
+        CurrMP = BaseMP;
     }
 }
 

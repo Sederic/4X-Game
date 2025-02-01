@@ -71,7 +71,7 @@ public class Civilization {
         // Units
         foreach (var unit in Units) {
             int vision = unit.Vision;
-            int blockingCount = unit.tile.UnitBlockingCount();
+            int blockingCount = unit.VisionBlockingCount();
             List<(GameTile, int)> frontier = new List<(GameTile, int)>();
             for (int i=0; i<6; i++) { frontier.Add((unit.tile, i)); }
             while (vision-- > 0) {

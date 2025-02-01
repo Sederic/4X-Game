@@ -29,6 +29,7 @@ public class UnitPrefab : MonoBehaviour
     public void SetUnitPrefab(Unit unit, GameUI UI)
     {
         this.unit = unit;
+        this.UI = UI;
         unitButton.gameObject.SetActive(unit.civ.Name == Game.Instance.civ.Name);
         switch (unit.unitType)
         {
@@ -60,10 +61,6 @@ public class UnitPrefab : MonoBehaviour
 
     public void OnClick()
     {
-        Debug.Log($"Unit Clicked: {unit.tile.x}, {unit.tile.y}");
-        foreach (var t in unit.tile.GetNeighborsArray()) {
-            Debug.Log($"Neighbor: {t.x}, {t.y}");
-        }
         if (!UI._zoomedIn)
         {
             UI.SelectUnit(unit);

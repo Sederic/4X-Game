@@ -90,4 +90,76 @@ public class Unit
     {
         this.tile = tile;
     }
+
+    /* ------------------------------------------------
+        UNIT MECHANICS
+    ------------------------------------------------ */
+    public int VisionBlockingCount()
+    {
+        if (tile.terrain == Terrain.Mountain) return 100;
+        return ((tile.terrain == Terrain.Hill) ? 1 : 0);
+    }
+
+    private List<GameTile>? _PossibleMovement;
+    public List<GameTile> PossibleMovement { get
+    {
+        List<GameTile> possibleMoves = new List<GameTile>();
+
+        bool[] visited = new bool[Game.Instance.tiles.Length * Game.Instance.tiles[0].Length];
+        List<(int, GameTile)> frontier = new List<(int, GameTile)>();
+        frontier.Add((CurrMP, tile));
+
+        while (frontier.Count > 0) {
+            List<(int, GameTile)> newFrontier = new List<(int, GameTile)>();
+            foreach ((int mp, GameTile tile_) in frontier) {
+                GameTile?[] neighbors = tile_.GetNeighborsArray();
+                for (int i=0; i<6; i++) {
+                    GameTile? t = neighbors[i];
+                    if (t != null) {
+                        if (visited[t.x * Game.Instance.tiles[0].Length + t.y]) continue;
+                        else visited[t.x * Game.Instance.tiles[0].Length + t.y] = true;
+
+                        int newMP = mp;
+
+                        // MC = inf
+                        if (!t.IsWalkable()) continue;
+
+                        // units are impassable rn
+                        else if (t.unit != null) continue;
+
+                        // MC = 3
+                        else if (
+                            t.terrain == Terrain.Hill && (
+                                t.feature == Feature.Woods ||
+                                t.feature == Feature.Rainforest
+                            )
+                        ) newMP -= 3;
+
+                        // MC = 2
+                        else if (
+                            t.terrain == Terrain.Hill ||
+                            t.feature == Feature.Woods ||
+                            t.feature == Feature.Rainforest ||
+                            t.feature == Feature.Marsh
+                        ) newMP -= 2;
+
+                        // MC = 1
+                        else newMP -= 1;
+
+                        // aditional
+                        // MC +3 - river
+                        if (t.riverEdges[i]) newMP -= 3;
+
+                        possibleMoves.Add(t);
+                        if (newMP > 0) {
+                            newFrontier.Add((newMP, t));
+                        }
+                    }
+                }
+            }
+            frontier = newFrontier;
+        }
+
+        return possibleMoves;
+    } }
 }

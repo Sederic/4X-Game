@@ -10,7 +10,9 @@ public class Scout : CivilianUnit
         unitType = UnitType.Scout;
         Name = unitType.ToString();
         
+        Vision = 3;
         BaseMP = 3;
+        CurrMP = BaseMP;
     }
 }
 

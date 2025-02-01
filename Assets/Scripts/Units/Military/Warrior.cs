@@ -9,9 +9,10 @@ public class Warrior : MilitaryUnit
     {
         unitType = UnitType.Warrior;
         Name = unitType.ToString();
-        
+
         Health = 20;
         BaseMP = 2;
+        CurrMP = BaseMP;
         CombatStrength = 20;
     }
 }

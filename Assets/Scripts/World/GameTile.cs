@@ -285,11 +285,6 @@ public class GameTile
     public static Vector3 Pos2(Point p, int z=0) { return Game.Instance.UI.baseTilemap.CellToWorld(TilemapLoc(p.x, p.y, z)); }
 
     /* -- Vision -- */
-    public int UnitBlockingCount()
-    {
-        if (terrain == Terrain.Mountain) return 100;
-        return ((terrain == Terrain.Hill) ? 1 : 0);
-    }
     public int BlockingCount()
     {
         if (terrain == Terrain.Mountain) return 100;
