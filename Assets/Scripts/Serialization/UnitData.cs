@@ -30,7 +30,7 @@ public class UnitData {
         unitType = unit.unitType.ToString();
 
         currMP = unit.CurrMP;
-        experience = unit.Experience;
+        experience = unit.XP;
         hasOrder = unit.HasOrder;
         exhausted = unit.Exhausted;
         camping = unit.Camping;

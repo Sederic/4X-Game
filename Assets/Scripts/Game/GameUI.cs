@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
@@ -10,7 +11,9 @@ using UnityEngine.UI;
 public class GameUI : MonoBehaviour
 {
 // Serialized Variables
-    [Header("Game Manager")] private GameManager gm;
+    [Header("Game Manager")]
+    private GameManager _gm;
+    private GameManager gm => _gm ??= FindObjectOfType<GameManager>();
     [Header("Cameras")] public Camera mainCam;
     [Header("Canvases")] public Canvas worldCanvas;
     public GameObject menuCanvas;
@@ -100,11 +103,6 @@ public class GameUI : MonoBehaviour
     // Camera References
     private Vector3 dragOrign;
 
-    void Start()
-    {
-        gm = FindObjectOfType<GameManager>();
-    }
-
     void Update()
     {
         // Toggle vision on/off for testing
@@ -114,6 +112,8 @@ public class GameUI : MonoBehaviour
         }
 
         CameraControl();
+
+        MoveSelectedUnit();
     }
 
     public void SetUpWorldCanvas()
@@ -397,18 +397,18 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    private List<GameTile> ShadingHighlight = new List<GameTile>();
+    private List<(int, GameTile)> ShadingHighlight = new List<(int, GameTile)>();
     public void ShowPossibleMoves()
     {
         // Display that Unit's possible moves through the Shading Tilemap (highlight tiles)
         ShadingHighlight = selectedUnit.PossibleMovement;
-        foreach (GameTile t in ShadingHighlight) {
+        foreach ((int _, GameTile t) in ShadingHighlight) {
             shadingTilemap.SetTile(t.TilemapLoc(), highlight);
         }
     }
     public void HidePossibleMoves()
     {
-        foreach (GameTile t in ShadingHighlight) {
+        foreach ((int _, GameTile t) in ShadingHighlight) {
             shadingTilemap.SetTile(t.TilemapLoc(), null);
         }
     }
@@ -426,37 +426,27 @@ public class GameUI : MonoBehaviour
             // If that location is highlighted
             if (shadingTilemap.HasTile(cellPosition))
             {
-                // Move Unit in GM
-                // gm.MoveUnit(selectedUnit, new Point(cellPosition.y, cellPosition.x));
-                
-                // Reposition Selected Unit prefab
-                RenderUnits();
-                
-                // Reset previous moves
-                HidePossibleMoves();
-                ShowPossibleMoves();
-                
+                Debug.Log($"Move to: {-cellPosition.x}, {cellPosition.y}");
+                ulong clientId = NetworkManager.Singleton.LocalClientId;
+                gm.Network_Unit_MoveTo__ServerRpc(clientId, 
+                    Game.Instance.civ.ID, selectedUnit.ID, -cellPosition.x, cellPosition.y
+                );
+            }
+        }
+    }
+    public void MoveSelectedUnitConfirmed()
+    {
+        HidePossibleMoves();
+        ShowPossibleMoves();
+
+        RenderPlayerVision();
+
+
                 // Update Unit Window Values
                 // OpenUnitWindow();
 
                 // Update End Turn Button in case player can now end turn
                 // UpdateEndTurnButton();
                 
-                // Render new visible tiles
-                RenderPlayerVision();
-            }
-        }
-    }
-    public void MoveSelectedUnitConfirmed()
-    {
-        
-    }
-
-    /* ------------------------------------------------
-        NETWORK - UNIT
-    ------------------------------------------------ */
-    public void Network_UpdateUnit()
-    {
-        
     }
 }

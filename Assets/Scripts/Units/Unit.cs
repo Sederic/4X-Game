@@ -29,7 +29,7 @@ public class Unit
     public int CurrMP { get; protected set; } // A Unit's remaining movement points this turn.
     public int Supplies { get; protected set; } // Determines how many turns it can stay out of your territory.
 
-    public int Experience { get; protected set; } = 0; // A Unit's current XP. Needs X amount for a Promotion.
+    public int XP { get; protected set; } = 0; // A Unit's current XP. Needs X amount for a Promotion.
     
     public bool HasOrder { get; protected set; } = false; // Determines whether a Unit has already been given an order.
     public bool Exhausted { get; protected set; } = false; // Determines if a Unit still has moves left this turn.
@@ -37,7 +37,6 @@ public class Unit
     public bool Passing { get; protected set; } = false; // Determines if a Unit is passing.
     
     // public List<Promotion> Promotions { get; protected set; } // Unlocked Promotions
-    // public Point Position { get; protected set; } // Unit's position on the map.
 
     public UnitPrefab unitPrefab { get; protected set; }
 
@@ -62,7 +61,7 @@ public class Unit
         ID = unit.unitID;
         
         CurrMP = unit.currMP;
-        Experience = unit.experience;
+        XP = unit.experience;
         HasOrder = unit.hasOrder;
         Exhausted = unit.exhausted;
         Camping = unit.camping;
@@ -83,12 +82,7 @@ public class Unit
 
     public void GainExperience(int xp)
     {
-        Experience += xp;
-    }
-
-    public void MoveTo(GameTile tile)
-    {
-        this.tile = tile;
+        XP += xp;
     }
 
     /* ------------------------------------------------
@@ -100,10 +94,13 @@ public class Unit
         return ((tile.terrain == Terrain.Hill) ? 1 : 0);
     }
 
-    private List<GameTile>? _PossibleMovement;
-    public List<GameTile> PossibleMovement { get
+    private List<(int, GameTile)>? _PossibleMovement;
+    public List<(int, GameTile)> PossibleMovement { get
     {
-        List<GameTile> possibleMoves = new List<GameTile>();
+        if (_PossibleMovement != null) return _PossibleMovement;
+        List<(int, GameTile)> possibleMoves = new List<(int, GameTile)>();
+
+        if (CurrMP == 0) return possibleMoves;
 
         bool[] visited = new bool[Game.Instance.tiles.Length * Game.Instance.tiles[0].Length];
         List<(int, GameTile)> frontier = new List<(int, GameTile)>();
@@ -150,7 +147,7 @@ public class Unit
                         // MC +3 - river
                         if (t.riverEdges[i]) newMP -= 3;
 
-                        possibleMoves.Add(t);
+                        possibleMoves.Add((CurrMP - newMP, t));
                         if (newMP > 0) {
                             newFrontier.Add((newMP, t));
                         }
@@ -162,4 +159,26 @@ public class Unit
 
         return possibleMoves;
     } }
+    public void ResetPossibleMovement() { _PossibleMovement = null; }
+
+    public void MoveTo(GameTile gameTile)
+    {
+        // Does not validate if it can be reached
+        int mpRequired = -1;
+        foreach ((int mp, GameTile t) in PossibleMovement) {
+            if (gameTile == t) {
+                mpRequired = mp;
+            }
+        }
+        if (mpRequired == -1) return;
+
+        tile.UnsetUnit();
+        tile = gameTile;
+        tile.SetUnit(this);
+        CurrMP -= mpRequired;
+        /* TBD: XP gain?? */ XP += mpRequired;
+
+        // Reset cache
+        ResetPossibleMovement();
+    }
 }

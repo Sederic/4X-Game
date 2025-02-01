@@ -212,4 +212,28 @@ public class GameManager : NetworkBehaviour {
         
     }
 
+    /* ------------------------------------------------
+        NETWORK - UNIT
+    ------------------------------------------------ */
+    [ServerRpc(RequireOwnership=false)]
+    public void Network_Unit_MoveTo__ServerRpc(ulong originID, int civID, int unitID, int tileX, int tileY)
+    {
+        // should lock or smthg prolly
+        
+        Network_Unit_MoveTo__ClientRpc(originID, civID, unitID, tileX, tileY);
+    }
+
+    [ClientRpc]
+    public void Network_Unit_MoveTo__ClientRpc(ulong originID, int civID, int unitID, int tileX, int tileY)
+    {
+        Civilization civ = Game.Instance.civs.Find(civ => civ.ID == civID);
+        Unit unit = civ.Units.Find(unit => unit.ID == unitID);
+        GameTile tile = Game.Instance.tiles[tileX][tileY];
+        unit.MoveTo(tile);
+        Game.Instance.UI.RenderUnits();
+
+        if (NetworkManager.Singleton.LocalClientId == originID) {
+            Game.Instance.UI.MoveSelectedUnitConfirmed();
+        }
+    }
 }

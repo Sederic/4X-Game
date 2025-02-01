@@ -94,9 +94,10 @@ public class Game {
         // Recreate World
         world = new World(gameState.world, gameState);
         gameState._tiles = world.tiles;
+        GameTile.SetAllTiles(world.tiles);
 
         // Recreate Civs
-        List<Civilization> civs = new List<Civilization>();
+        civs = new List<Civilization>();
         gameState._civsDict = new Dictionary<int, Civilization>();
         foreach (var civ in gameState.civs.Values) {
             Civilization newCiv = new Civilization(civ, gameState);
