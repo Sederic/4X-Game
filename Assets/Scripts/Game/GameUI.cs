@@ -427,7 +427,7 @@ public class GameUI : MonoBehaviour
             if (shadingTilemap.HasTile(cellPosition))
             {
                 // Move Unit in GM
-                gm.MoveUnit(selectedUnit, new Point(cellPosition.y, cellPosition.x));
+                // gm.MoveUnit(selectedUnit, new Point(cellPosition.y, cellPosition.x));
                 
                 // Reposition Selected Unit prefab
                 RenderUnits();
@@ -439,12 +439,6 @@ public class GameUI : MonoBehaviour
                 // Update Unit Window Values
                 // OpenUnitWindow();
 
-                // If Selected Unit can no longer move (out of movement points)
-                if (!selectedUnit.canMove())
-                {
-                    RemovePossibleMoves();
-                }
-                
                 // Update End Turn Button in case player can now end turn
                 // UpdateEndTurnButton();
                 
