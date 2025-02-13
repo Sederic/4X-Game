@@ -30,7 +30,7 @@ public class MenuHandler : MonoBehaviour
     public TMP_InputField seedInput;
 
     [Header("Input Fields")]
-    public TMP_InputField lobbyCodeInput;
+    public TextMeshProUGUI lobbyCodeInput;
     
     private string filePath;
     private GameObject currentCanvas;
@@ -122,6 +122,8 @@ public class MenuHandler : MonoBehaviour
 
     public void GoToMultiplayerJoinGame()
     {
+        ListMultiplayerGames();
+
         // Deactivate Current Canvas
         currentCanvas.SetActive(false);
         
@@ -217,7 +219,7 @@ public class MenuHandler : MonoBehaviour
     }
 
     public void JoinLobby() {
-        gameManager.JoinLobbyByCode(lobbyCodeInput.text);
+        gameManager.JoinLobbyByCode(lobbyCodeInput.text.Replace("\u200B", ""));
     }
 
     public void ListMultiplayerGames() {

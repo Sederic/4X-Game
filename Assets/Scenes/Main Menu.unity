@@ -7859,7 +7859,7 @@ MonoBehaviour:
   gamePlayersContainer: {fileID: 0}
   saveListContainer: {fileID: 178272003}
   seedInput: {fileID: 1342004032}
-  lobbyCode: {fileID: 1239509402}
+  lobbyCodeInput: {fileID: 1852800417}
 --- !u!1 &1948703945
 GameObject:
   m_ObjectHideFlags: 0
