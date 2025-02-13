@@ -288,6 +288,7 @@ public class GameManager : NetworkBehaviour {
         await JoinRelay(joinCode);
 
         await game.SetupUI();
+        // game.UI.RenderGame();
     }
 
     private async Task JoinRelay(string joinCode)
