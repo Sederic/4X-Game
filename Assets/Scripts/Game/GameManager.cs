@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Netcode;
@@ -14,6 +15,8 @@ using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
 
 public class GameManager : NetworkBehaviour {
     private static GameManager _instance;
@@ -67,7 +70,40 @@ public class GameManager : NetworkBehaviour {
     /* -----------------------------------------------
         Host Multiplayer Game
     ----------------------------------------------- */
-    public async void HostNewMultiplayerGame() {
+    public async Task<List<Lobby>> GetAvailableLobbies()
+    {
+        try
+        {
+            await Authenticate();
+
+            QueryResponse queryResponse = await Lobbies.Instance.QueryLobbiesAsync();
+            return queryResponse.Results;
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError($"Failed to get lobbies: {e.Message}");
+            return new List<Lobby>();
+        }
+    }
+
+    public async Task ShowLobbies()
+    {
+        Debug.Log("Lobbies:");
+        List<Lobby> lobbies = await GetAvailableLobbies();
+        Debug.Log("LobbiesX:");
+        foreach (Lobby lobby in lobbies)
+        {
+            string lobbyCode = lobby.Data.ContainsKey("LobbyCode") ? lobby.Data["LobbyCode"].Value : "N/A";
+            Debug.Log($"Lobby: {lobby.Name}, Players: {lobby.Players.Count}/{lobby.MaxPlayers}, Code: {lobbyCode}");
+        }
+    }
+
+    public bool IsLobbyPrivate = true;
+    public async void HostNewMultiplayerGame__Lobby(bool isPrivate=false) {
+        await CreateLobby("My Game Name", 4, isPrivate);
+    }
+
+    public async void HostNewMultiplayerGame(bool isPrivate=false) {
         isSinglePlayer = false;
         isHost = true;
 
@@ -81,15 +117,22 @@ public class GameManager : NetworkBehaviour {
         game = Game.Instance;
 
         relayCode = await CreateRelay();
+
+        // Update the lobby with the actual lobby code
+        await Lobbies.Instance.UpdateLobbyAsync(currentLobby.Id, new UpdateLobbyOptions
+        {
+            Data = new Dictionary<string, DataObject>
+            {
+                { "RelayCode", new DataObject(DataObject.VisibilityOptions.Public, relayCode) }
+            }
+        });
     }
 
-    private async Task<string> CreateRelay()
+    public async Task<string> CreateRelay()
     {
         try
         {
-            await UnityServices.InitializeAsync();
-            if (!AuthenticationService.Instance.IsSignedIn)
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            await Authenticate();
 
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(2);
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
@@ -105,14 +148,137 @@ public class GameManager : NetworkBehaviour {
         catch (System.Exception e)
         {
             Debug.LogError($"Relay Creation Failed: {e.Message}");
+            // TODO: incorrect relay join code -- maybe set error string (red) saying incorrect code
             return null;
+        }
+
+    }
+
+    private Lobby currentLobby;
+    public string lobbyCode;
+
+    public async Task CreateLobby(string lobbyName, int maxPlayers, bool isPrivate=true)
+    {
+        try
+        {
+            await Authenticate();
+
+            Lobby createdLobby = await Lobbies.Instance.CreateLobbyAsync(lobbyName, maxPlayers, new CreateLobbyOptions
+            {
+                IsPrivate = false,
+                Data = new Dictionary<string, DataObject>
+                {
+                    { "LobbyCode", new DataObject(DataObject.VisibilityOptions.Public, "Generating...") }
+                }
+            });
+
+            // Wait for Unity Lobby to process
+            await Task.Delay(1000);  
+
+            // Fetch the actual lobby with its generated code
+            createdLobby = await Lobbies.Instance.GetLobbyAsync(createdLobby.Id);
+
+            // Update the lobby with the actual lobby code
+            await Lobbies.Instance.UpdateLobbyAsync(createdLobby.Id, new UpdateLobbyOptions
+            {
+                Data = new Dictionary<string, DataObject>
+                {
+                    { "LobbyCode", new DataObject(DataObject.VisibilityOptions.Public, createdLobby.LobbyCode) }
+                }
+            });
+
+            Debug.Log($"Lobby Created: {createdLobby.Name}, Code: {createdLobby.LobbyCode}");
+            currentLobby = createdLobby;
+            lobbyCode = createdLobby.LobbyCode;
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError($"Failed to create lobby: {e.Message}");
         }
     }
 
+    public async Task JoinLobbyByCode()
+    {
+        try
+        {
+            await Authenticate();
+
+            currentLobby = await Lobbies.Instance.JoinLobbyByCodeAsync(lobbyCode);
+
+            Debug.Log($"Joined Lobby: {currentLobby.Name}, Players: {currentLobby.Players.Count}/{currentLobby.MaxPlayers}");
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError($"Failed to join lobby: {e.Message}");
+
+            // Check if the error means "Player is already in a lobby"
+            if (e.Message == "player is already a member of the lobby") // alr in lobby (same pc for dev purposes)
+            {
+                Debug.Log("Player is already in a lobby. Retrieving existing instance...");
+
+                // Get the current lobby the player is in
+                QueryResponse queryResponse = await Lobbies.Instance.QueryLobbiesAsync();
+
+                foreach (Lobby lobby in queryResponse.Results)
+                {
+                    if (lobby.Players.Any(p => p.Id == AuthenticationService.Instance.PlayerId))
+                    {
+                        currentLobby = lobby;
+                        Debug.Log($"Found existing lobby: {currentLobby.Name}");
+                        break;
+                    }
+                }
+
+                PollLobbyForRelayCode();
+            }
+        }
+    }
+
+    private bool isCheckingForRelay = false;
+
+    public async Task PollLobbyForRelayCode()
+    {
+        if (currentLobby == null)
+        {
+            Debug.LogError("Not in a lobby.");
+            return;
+        }
+
+        isCheckingForRelay = true;
+
+        while (isCheckingForRelay)
+        {
+            try
+            {
+                currentLobby = await Lobbies.Instance.GetLobbyAsync(currentLobby.Id);
+
+                if (currentLobby.Data.ContainsKey("RelayCode") && currentLobby.Data["RelayCode"].Value != "N/A")
+                {
+                    Debug.Log($"Relay Code Found: {currentLobby.Data["RelayCode"].Value}");
+                    relayCode = currentLobby.Data["RelayCode"].Value;
+                    await JoinMultiplayerGame();
+                    isCheckingForRelay = false; // Stop checking
+                    return;
+                }
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.LogError($"Error checking for Relay Code: {e.Message}");
+            }
+
+            await Task.Delay(2000); // Check every 2 seconds
+        }
+    }
     /* -----------------------------------------------
         Join Multiplayer Game
     ----------------------------------------------- */
-    public async void JoinMultiplayerGame() {
+    public async Task Authenticate() {
+        await UnityServices.InitializeAsync();
+        if (!AuthenticationService.Instance.IsSignedIn)
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+    }
+
+    public async Task JoinMultiplayerGame() {
         isSinglePlayer = false;
         isHost = false;
         string joinCode = relayCode;
@@ -127,9 +293,7 @@ public class GameManager : NetworkBehaviour {
     {
         try
         {
-            await UnityServices.InitializeAsync();
-            if (!AuthenticationService.Instance.IsSignedIn)
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            await Authenticate();
 
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
             Debug.Log($"Joined Relay with Code: {joinCode}");

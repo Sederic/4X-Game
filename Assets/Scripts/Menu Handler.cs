@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -90,11 +91,19 @@ public class MenuHandler : MonoBehaviour
         // gameManager.NewDemoGame(seed);
     }
 
-    public void NewMultiplayerGame() {
+    public void CreateLobby() {
+        gameManager.HostNewMultiplayerGame__Lobby(gameManager.IsLobbyPrivate);
+    }
+
+    public void StartGameAsHost() {
         gameManager.HostNewMultiplayerGame();
     }
 
-    public void LoadMultiplayerGmae() {
-        gameManager.JoinMultiplayerGame();
+    public void JoinLobby() {
+        gameManager.JoinLobbyByCode();
+    }
+
+    public void ListMultiplayerGames() {
+        gameManager.ShowLobbies();
     }
 }
