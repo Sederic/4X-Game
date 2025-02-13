@@ -6421,7 +6421,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1933313098}
         m_TargetAssemblyTypeName: MenuHandler, Assembly-CSharp
-        m_MethodName: GoToMainMenu
+        m_MethodName: GoToMainMenuCanvas
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

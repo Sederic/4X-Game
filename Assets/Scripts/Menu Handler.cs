@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using UnityEngine;
@@ -29,6 +30,7 @@ public class MenuHandler : MonoBehaviour
     
     private string filePath;
     private GameObject currentCanvas;
+    private List<GameObject> playerButtons;
 
     // Start is called before the first frame update
     void Start()
@@ -135,7 +137,33 @@ public class MenuHandler : MonoBehaviour
     public void LoadMultiplayerGmae() {
         gameManager.JoinMultiplayerGame();
     }
-    
+
+    /* Will be called every second to update the players in host's game */
+    void UpdatePlayersInHostGame()
+    {
+        foreach (GameObject player in playerButtons)
+        {
+            if (playerButtons.Contains(player))
+            {
+                playerButtons.Remove(player);
+            }
+        }
+        
+        /*
+         *    foreach (player connected){
+         *   {
+         *          
+         *   }
+         */
+        
+        GameObject playerButton = Instantiate(playerButtonPrefab, gamePlayersContainer);
+        PlayerButton playerButtonScript = playerButton.GetComponent<PlayerButton>();
+        playerButtonScript.playerName.text = "player name (replace me!)";
+        playerButtonScript.playerID.text = "player ID (replace me!)";
+        
+        // Track it in List
+        playerButtons.Add(playerButton);
+    }
     
     // Opens Load Game Menu 
     public void OpenLoadGameMenu()
