@@ -11,39 +11,138 @@ public class MenuHandler : MonoBehaviour
 
     [Header("Menu Canvases")]
     public GameObject mainMenuCanvas;
-    public GameObject newGameCanvas;
-    public GameObject loadGameCanvas;
+    public GameObject singleplayerMenuCanvas;
+    public GameObject singleplayerNewGameCanvas;
+    public GameObject singleplayerLoadGameCanvas;
+    public GameObject multiplayerMenuCanvas;
+    public GameObject multiplayerHostGameCanvas;
+    public GameObject multiplayerJoinGameCanvas;
     
     [Header("Prefabs")]
+    public GameObject playerButtonPrefab;
     public GameObject saveButtonPrefab;
+    public Transform gamePlayersContainer;
     public Transform saveListContainer;
     
     [Header("World Seed Input")]
     public TMP_InputField seedInput;
     
     private string filePath;
+    private GameObject currentCanvas;
 
     // Start is called before the first frame update
     void Start()
     {
-        DontDestroyOnLoad(gameManager);
+        currentCanvas = mainMenuCanvas;
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    // Closes any Menu and returns to Main Menu
+    public void GoToMainMenuCanvas()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (currentCanvas != mainMenuCanvas)
         {
-            BackToMainMenu();
+            // Deactivate Current Canvas
+            currentCanvas.SetActive(false);
+            
+            // Activate Main Menu Canvas
+            mainMenuCanvas.SetActive(true);
+            
+            // Set Current Canvas
+            currentCanvas = mainMenuCanvas;
         }
     }
+    
+    public void GoToSingleplayerMenu()
+    {
+        // Deactivate Main Menu Canvas
+        currentCanvas.SetActive(false);
+        
+        // Activate Singleplayer Menu Canvas
+        singleplayerMenuCanvas.SetActive(true);
+
+        // Set Current Canvas
+        currentCanvas = singleplayerMenuCanvas;
+    }
+
+    public void GoToMultiplayerMenu()
+    {
+        // Deactivate Main Menu Canvas
+        currentCanvas.SetActive(false);
+        
+        // Activate Multiplayer Menu Canvas
+        multiplayerMenuCanvas.SetActive(true);
+        
+        // Set Current Canvas
+        currentCanvas = multiplayerMenuCanvas;
+    }
+
+    public void GoToSingleplayerNewGame()
+    {
+        // Deactivate Singleplayer Menu Canvas
+        currentCanvas.SetActive(false);
+        
+        // Activate Singleplayer New Game Canvas
+        singleplayerNewGameCanvas.SetActive(true);
+        
+        currentCanvas = singleplayerNewGameCanvas;
+    }
+
+    public void GoToSingleplayerLoadGame()
+    {
+        // Deactivate Current Canvas
+        currentCanvas.SetActive(false);
+        
+        // Activate Singleplayer Load Game Canvas
+        singleplayerLoadGameCanvas.SetActive(true);
+        
+        // Set Current Canvas
+        currentCanvas = singleplayerLoadGameCanvas;
+    }
+
+    public void GoToMultiplayerHostGame()
+    {
+        // Deactivate Current Canvas
+        currentCanvas.SetActive(false);
+        
+        // Activate Multiplayer Host Game Canvas
+        multiplayerHostGameCanvas.SetActive(true);
+        
+        // Set Current Canvas
+        currentCanvas = multiplayerHostGameCanvas;
+    }
+
+    public void GoToMultiplayerJoinGame()
+    {
+        // Deactivate Current Canvas
+        currentCanvas.SetActive(false);
+        
+        // Activate Multiplayer Join Game Canvas
+        multiplayerJoinGameCanvas.SetActive(true);
+        
+        // Set Current Canvas
+        currentCanvas = multiplayerJoinGameCanvas;
+    }
+    
+    public void ApplicationQuit()
+    {
+        Application.Quit();
+    }
+    
+    public void NewMultiplayerGame() {
+        gameManager.HostNewMultiplayerGame();
+    }
+
+    public void LoadMultiplayerGmae() {
+        gameManager.JoinMultiplayerGame();
+    }
+    
     
     // Opens Load Game Menu 
     public void OpenLoadGameMenu()
     {
         mainMenuCanvas.SetActive(false);
-        newGameCanvas.SetActive(false);
-        loadGameCanvas.SetActive(true);
+        /*newGameCanvas.SetActive(false);
+        loadGameCanvas.SetActive(true);*/
         
         PopulateSaveList();
         
@@ -65,36 +164,5 @@ public class MenuHandler : MonoBehaviour
         {
             // gameManager.LoadGame(filePath);
         }
-    }
-
-    // Opens New Game Menu
-    public void OpenNewGameMenu()
-    {
-        mainMenuCanvas.SetActive(false);
-        loadGameCanvas.SetActive(false);
-        newGameCanvas.SetActive(true);
-    }
-
-    // Closes any Menu and returns to Main Menu
-    public void BackToMainMenu()
-    {
-        mainMenuCanvas.SetActive(true);
-        newGameCanvas.SetActive(false);
-        loadGameCanvas.SetActive(false);
-    }
-
-    public void StartNewGame()
-    {
-        int input = int.Parse(seedInput.text);
-        uint seed = Convert.ToUInt32(input);
-        // gameManager.NewDemoGame(seed);
-    }
-
-    public void NewMultiplayerGame() {
-        gameManager.HostNewMultiplayerGame();
-    }
-
-    public void LoadMultiplayerGmae() {
-        gameManager.JoinMultiplayerGame();
     }
 }
