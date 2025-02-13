@@ -28,10 +28,14 @@ public class MenuHandler : MonoBehaviour
     
     [Header("World Seed Input")]
     public TMP_InputField seedInput;
+
+    [Header("Input Fields")]
+    public TMP_InputField lobbyCodeInput;
     
     private string filePath;
     private GameObject currentCanvas;
     private List<GameObject> playerButtons;
+
 
     // Start is called before the first frame update
     void Start()
@@ -104,6 +108,8 @@ public class MenuHandler : MonoBehaviour
 
     public void GoToMultiplayerHostGame()
     {
+        CreateLobby();
+
         // Deactivate Current Canvas
         currentCanvas.SetActive(false);
         
@@ -195,28 +201,12 @@ public class MenuHandler : MonoBehaviour
         }
     }
 
-    // Opens New Game Menu
-    public void OpenNewGameMenu()
-    {
-        mainMenuCanvas.SetActive(false);
-        loadGameCanvas.SetActive(false);
-        newGameCanvas.SetActive(true);
-    }
-
-    // Closes any Menu and returns to Main Menu
-    public void BackToMainMenu()
-    {
-        mainMenuCanvas.SetActive(true);
-        newGameCanvas.SetActive(false);
-        loadGameCanvas.SetActive(false);
-    }
-
-    public void StartNewGame()
-    {
-        int input = int.Parse(seedInput.text);
-        uint seed = Convert.ToUInt32(input);
-        // gameManager.NewDemoGame(seed);
-    }
+    // public void StartNewGame()
+    // {
+    //     int input = int.Parse(seedInput.text);
+    //     uint seed = Convert.ToUInt32(input);
+    //     // gameManager.NewDemoGame(seed);
+    // }
 
     public void CreateLobby() {
         gameManager.HostNewMultiplayerGame__Lobby(gameManager.IsLobbyPrivate);
@@ -227,7 +217,7 @@ public class MenuHandler : MonoBehaviour
     }
 
     public void JoinLobby() {
-        gameManager.JoinLobbyByCode();
+        gameManager.JoinLobbyByCode(lobbyCodeInput.text);
     }
 
     public void ListMultiplayerGames() {

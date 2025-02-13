@@ -197,8 +197,9 @@ public class GameManager : NetworkBehaviour {
         }
     }
 
-    public async Task JoinLobbyByCode()
+    public async Task JoinLobbyByCode(string _lobbyCode)
     {
+        lobbyCode = _lobbyCode;
         try
         {
             await Authenticate();
