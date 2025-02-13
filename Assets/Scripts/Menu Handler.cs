@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,10 +28,14 @@ public class MenuHandler : MonoBehaviour
     
     [Header("World Seed Input")]
     public TMP_InputField seedInput;
+
+    [Header("Input Fields")]
+    public TextMeshProUGUI lobbyCodeInput;
     
     private string filePath;
     private GameObject currentCanvas;
     private List<GameObject> playerButtons;
+
 
     // Start is called before the first frame update
     void Start()
@@ -103,6 +108,8 @@ public class MenuHandler : MonoBehaviour
 
     public void GoToMultiplayerHostGame()
     {
+        CreateLobby();
+
         // Deactivate Current Canvas
         currentCanvas.SetActive(false);
         
@@ -115,6 +122,8 @@ public class MenuHandler : MonoBehaviour
 
     public void GoToMultiplayerJoinGame()
     {
+        ListMultiplayerGames();
+
         // Deactivate Current Canvas
         currentCanvas.SetActive(false);
         
@@ -192,5 +201,28 @@ public class MenuHandler : MonoBehaviour
         {
             // gameManager.LoadGame(filePath);
         }
+    }
+
+    // public void StartNewGame()
+    // {
+    //     int input = int.Parse(seedInput.text);
+    //     uint seed = Convert.ToUInt32(input);
+    //     // gameManager.NewDemoGame(seed);
+    // }
+
+    public void CreateLobby() {
+        gameManager.HostNewMultiplayerGame__Lobby(gameManager.IsLobbyPrivate);
+    }
+
+    public void StartGameAsHost() {
+        gameManager.HostNewMultiplayerGame();
+    }
+
+    public void JoinLobby() {
+        gameManager.JoinLobbyByCode(lobbyCodeInput.text.Replace("\u200B", ""));
+    }
+
+    public void ListMultiplayerGames() {
+        gameManager.ShowLobbies();
     }
 }
