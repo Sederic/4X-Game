@@ -4720,7 +4720,7 @@ PrefabInstance:
     - target: {fileID: 6275797788386788270, guid: a9fdfc5520249fe4eb27c5dc2344259d, type: 3}
       propertyPath: edgeCloudTile
       value: 
-      objectReference: {fileID: 11400000, guid: f7405dcb41ceda6459649cea9abacc53, type: 2}
+      objectReference: {fileID: 11400000, guid: 440aaea96ab942240bacf2d11f12e110, type: 2}
     - target: {fileID: 6275797788386788270, guid: a9fdfc5520249fe4eb27c5dc2344259d, type: 3}
       propertyPath: fullCloudTile
       value: 

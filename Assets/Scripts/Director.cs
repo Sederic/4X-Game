@@ -198,9 +198,6 @@ public class Director : MonoBehaviour
                     // Reset previous moves
                     RemovePossibleMoves();
                     
-                    // Display New Possible Moves
-                    DisplayPossibleMoves(selectedUnit);
-                    
                     // Update Unit Window Values
                     OpenUnitWindow();
 
@@ -215,6 +212,9 @@ public class Director : MonoBehaviour
                     
                     // Render new visible tiles
                     RenderVisionTilemaps();
+                    
+                    // Display New Possible Moves
+                    DisplayPossibleMoves(selectedUnit);
                 }
             }
         }
