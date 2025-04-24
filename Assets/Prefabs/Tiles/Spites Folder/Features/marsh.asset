@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: marsh
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: f8247d6e59bf11e49a0451c5f85aaa12, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 6f00177ed8fec1e4e87217f3a303400d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1

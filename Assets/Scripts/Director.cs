@@ -4,6 +4,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
@@ -19,14 +20,19 @@ public class Director : MonoBehaviour
     public GameObject unitWindowCanvas;
     public TMP_InputField saveIF;
     public GameObject settlementWindowCanvas;
-    [Header("Owner")] public Civilization civilization;
-    [Header("Tilemaps")] public Tilemap baseTilemap;
+    [Header("Owner")] 
+    public Civilization civilization;
+    [Header("Tilemaps")] 
+    public Tilemap baseTilemap;
     public Tilemap hillsTilemap;
     public Tilemap mountainTilemap;
     public Tilemap featureTilemap;
     public Tilemap shadingTilemap;
-    public Tilemap visibilityTilemap;
-    [Header("Flat Tiles")] public Tile tile;
+    public Tilemap edgeCloudTilemap;
+    public Tilemap fullCloudTilemap;
+    
+    [Header("Flat Tiles")] 
+    public Tile tile;
     public Tile prairieTile;
     public Tile grassTile;
     public Tile tundraTile;
@@ -41,6 +47,8 @@ public class Director : MonoBehaviour
     public Tile snowHillsTile;
     [Header("Features")] public Tile woodsTile_grassland;
 	public Tile woodsTile_plains;
+    public Tile grasslandFloodplainsTile;
+    public Tile desertFloodplainsTile;
     public Tile floodplainsTile;
     public Tile marshTile;
     public Tile rainforestTile;
@@ -50,7 +58,8 @@ public class Director : MonoBehaviour
     public Tile mountain;
     [Header("Shading Tiles")] 
     public Tile highlight;
-    public Tile unexplored;
+    public Tile fullCloudTile;
+    public Tile edgeCloudTile;
     public Tile darkened;
     [Header("Rivers")] 
     public GameObject riversParent;
@@ -154,7 +163,7 @@ public class Director : MonoBehaviour
         // Toggle vision on/off for testing
         if (Input.GetKeyDown(KeyCode.Period))
         {
-            visibilityTilemap.gameObject.SetActive(!visibilityTilemap.gameObject.activeSelf);
+            fullCloudTilemap.gameObject.SetActive(!fullCloudTilemap.gameObject.activeSelf);
         }
 
         if (!_zoomedIn)
@@ -205,7 +214,7 @@ public class Director : MonoBehaviour
                     UpdateEndTurnButton();
                     
                     // Render new visible tiles
-                    RenderPlayerVision();
+                    RenderVisionTilemaps();
                 }
             }
         }
@@ -526,11 +535,11 @@ public class Director : MonoBehaviour
     void RenderGame()
     {
         World gameWorld = gm.game.world;
-        RenderTilemaps(gameWorld);
+        RenderWorldTilemaps(gameWorld);
         RenderSettlementUI(gameWorld);
         RenderTerritoryLines();
         RenderUnits();
-        RenderPlayerVision();
+        RenderVisionTilemaps();
     }
 
     /* Renders Settlement UI above Settlement Tiles */
@@ -667,8 +676,9 @@ public class Director : MonoBehaviour
     }
 
     /* Renders all Tilemaps */
-    void RenderTilemaps(World world)
+    void RenderWorldTilemaps(World world)
     {
+        // World Scan
         for (int x = 0; x < world.GetLength(); x++)
         {
             for (int y = 0; y < world.GetHeight(); y++)
@@ -864,14 +874,18 @@ public class Director : MonoBehaviour
         }
     }
 
-    void RenderPlayerVision()
+    void RenderVisionTilemaps()
     {
         // Update player civilization's visibleTiles
         CalculateVision();
 
-        for (int x = 0; x < gm.game.world.GetLength(); x++)
+        // Store reference to world
+        World world = gm.game.world;
+
+        // World Scan - Draw Clouds and Remove them
+        for (int x = 0; x < world.GetLength(); x++)
         {
-            for (int y = 0; y < gm.game.world.GetHeight(); y++)
+            for (int y = 0; y < world.GetHeight(); y++)
             {
                 Point currentPoint = new Point(x, y);
                 Vector3Int cellLocation = new Vector3Int(y, x, 0);
@@ -879,20 +893,53 @@ public class Director : MonoBehaviour
                 // If the Tile hasn't been discovered
                 if (!civilization.discoveredTiles.Contains(currentPoint))
                 {
-                    // Place unexplored tile there
-                    visibilityTilemap.SetTile(cellLocation, unexplored);
+                    GameTile tile = world.GetTile(currentPoint);
+
+                    bool isEdgeCloud = false;
+
+                    // Check if cloud is on edge
+                    foreach (GameTile neighbor in tile.GetNeighbors())
+                    {
+                        if (neighbor is not null)
+                        {
+                            // If one neighbor has been discovered.
+                            Point neighborPoint = new Point(neighbor.GetXPos(), neighbor.GetYPos());
+                            if (civilization.discoveredTiles.Contains(neighborPoint))
+                            {
+                                isEdgeCloud = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If it's an edge cloud
+                    if (isEdgeCloud)
+                    {
+                        edgeCloudTilemap.SetTile(cellLocation, edgeCloudTile);
+                        fullCloudTilemap.SetTile(cellLocation, null);
+                    }
+                    else // If it's a full cloud
+                    {
+                        // Place unexplored tile there
+                        fullCloudTilemap.SetTile(cellLocation, fullCloudTile);
+                        edgeCloudTilemap.SetTile(cellLocation, null);
+                    }
                 }
-                else
+                else // If it's discovered
                 {
                     // If it is not visible
                     if (!visibleTiles.Contains(currentPoint))
                     {
-                        visibilityTilemap.SetTile(cellLocation, darkened);
+                        shadingTilemap.SetTile(cellLocation, darkened);
+                        
                     }
                     else
                     {
-                        visibilityTilemap.SetTile(cellLocation, null);
+                        shadingTilemap.SetTile(cellLocation, null);
                     }
+                    
+                    fullCloudTilemap.SetTile(cellLocation, null);
+                    edgeCloudTilemap.SetTile(cellLocation, null);
                 }
             }
         }
@@ -1100,12 +1147,12 @@ public class Director : MonoBehaviour
         RemovePossibleMoves();
         
         // Render Settlement and delete Unit
-        RenderTilemaps(gm.game.world);
+        RenderWorldTilemaps(gm.game.world);
         RenderSettlementUI(gm.game.world);
         RenderTerritoryLines();
         
         // Update Player vision with new territory tiles
-        RenderPlayerVision();
+        RenderVisionTilemaps();
     }
 
     void CalculateVision()

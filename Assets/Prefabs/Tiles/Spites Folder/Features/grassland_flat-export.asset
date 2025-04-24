@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: Unexplored
+  m_Name: grassland_flat-export
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: 17b47e820f81e6c4aa3aec1e9f69794f, type: 3}
-  m_Color: {r: 0.8962264, g: 0.8962264, b: 0.8962264, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 80ad262fa09bcb846999f975298ba8dd, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0
