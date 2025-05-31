@@ -7,16 +7,17 @@ public class GameTile : ISerialization
 {
     /*ID INDEX
         Biomes ID:
-            1. Plains
-            2. Grassland
-            3. Tundra
-            4. Desert
-            5. Snow
-            6. Coast
-            7. Ocean
+            1. Grassland
+            2. Verdant
+            3. Tropical
+            4. Tundra
+            5. Arid Plains
+            6. Desert
+            7. Coast
+            8. Ocean
 
         Terrain ID:
-            0. Flat
+            0. Plains
             1. Hill
             2. Mountain
 
@@ -151,29 +152,35 @@ public class GameTile : ISerialization
         // Set base Biome yields.
         switch (_biome)
         {
-            case 1: // Plains
-                _yields[0] = 1; // +1 Food
-                _yields[1] = 1; // +1 Production
+            case 1: // Grassland
+                _yields[0] = 1; // 1 Food
+                _yields[1] = 1; // 1 Production
                 break;
-            case 2: // Grassland
-                _yields[0] = 2; // +2 Food
-                _yields[1] = 1; // +1 Production
+            case 2: // Verdant
+                _yields[0] = 2; // 2 Food
+                _yields[1] = 1; // 1 Production
                 break;
-            case 3: // Tundra
-                _yields[0] = 1; // +1 Food
-                _yields[1] = 1; // +1 Production
+            case 3: // Tropical
+                _yields[0] = 1; // 2 Food
+                _yields[1] = 1; // 1 Production
                 break;
-            case 4: // Desert
-                _yields[1] = 1; // +1 Production
+            case 4: // Tundra
+                _yields[0] = 1; // 1 Food
+                _yields[1] = 1; // 1 Production
                 break;
-            case 5: // Snow
+            case 5: // Arid Plains
+                _yields[0] = 1; // 1 Food
+                _yields[1] = 1; // 1 Production
                 break;
-            case 6: // Coast
-                _yields[0] = 1; // +1 Food
-                _yields[2] = 1; // +1 Gold
+            case 6: // Desert
+                _yields[1] = 1; // 1 Production
                 break;
-            case 7: // Ocean
-                _yields[0] = 1; // +1 Food
+            case 7: // Coast
+                _yields[0] = 1; // 1 Food
+                _yields[1] = 1; // 1 Production
+                break;
+            case 8: // Ocean
+                _yields[0] = 1; // 1 Food
                 break;
         }
 

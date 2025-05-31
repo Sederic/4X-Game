@@ -29,6 +29,14 @@ public class WorldGenerator : MonoBehaviour
 
         return world;
     }
+
+    public enum MapType
+    {
+        Pangaea,
+        Continents,
+        Archipelago,
+        InlandOcean
+    }
     
     /* Determine Continent Numbers */
     void DetermineContinents(World _world)
@@ -99,7 +107,6 @@ public class WorldGenerator : MonoBehaviour
                 int continentStartYWest = _random.NextInt((int)(_world.GetHeight() * .25), (int)(_world.GetHeight() * .75));
                 int continentStartXEast = _random.NextInt((int)(_world.GetLength() * .65), (int)(_world.GetLength() * .75));
                 int continentStartYEast = _random.NextInt((int)(_world.GetHeight() * .25), (int)(_world.GetHeight() * .75));
-
 
                 // Store those X & Y in a ContinentStart Point for each Continent
                 Point continentStart1 = new Point(continentStartXWest, continentStartYWest);
@@ -622,10 +629,6 @@ public class WorldGenerator : MonoBehaviour
             
             
         }
-
-        
-        
-        
         
     }
 

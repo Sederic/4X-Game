@@ -164,6 +164,7 @@ public class Director : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Period))
         {
             fullCloudTilemap.gameObject.SetActive(!fullCloudTilemap.gameObject.activeSelf);
+            edgeCloudTilemap.gameObject.SetActive(!edgeCloudTilemap.gameObject.activeSelf);
         }
 
         if (!_zoomedIn)
