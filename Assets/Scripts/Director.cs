@@ -33,13 +33,14 @@ public class Director : MonoBehaviour
     
     [Header("Flat Tiles")] 
     public Tile tile;
-    public Tile prairieTile;
-    public Tile grassTile;
+    public Tile grasslandTile;
+    public Tile verdantTile;
+    public Tile tropicalTile;
     public Tile tundraTile;
+    public Tile aridPlainsTile;
     public Tile desertTile;
-    public Tile oceanTile;
     public Tile coastTile;
-    public Tile snowTile;
+    public Tile oceanTile;
     [Header("Hills Tiles")] public Tile prairieHillsTile;
     public Tile grassHillsTile;
     public Tile tundraHillsTile;
@@ -691,11 +692,11 @@ public class Director : MonoBehaviour
                 double bigY = (float)(y * tileHeight + (tileHeight / 2) * (x % 2));
 
                 /* Render Base Tiles */
-                // Plains
+                // Grassland
                 if (currTile.GetBiome() == 1)
                 {
                     // Base Flat Tile
-                    baseTilemap.SetTile(new Vector3Int(y, x, 0), prairieTile);
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), grasslandTile);
 
                     // Hills
                     if (currTile.GetTerrain() == 1)
@@ -704,11 +705,11 @@ public class Director : MonoBehaviour
                     }
                     //tile.color = new Color32(145, 158, 11, 255);
                 }
-                // Grassland
+                // Verdant
                 else if (currTile.GetBiome() == 2)
                 {
                     // Flat Tile
-                    baseTilemap.SetTile(new Vector3Int(y, x, 0), grassTile);
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), verdantTile);
 
                     // Hills
                     if (currTile.GetTerrain() == 1)
@@ -717,11 +718,11 @@ public class Director : MonoBehaviour
                     }
                     //tile.color = new Color32(92, 128, 82, 255);
                 }
-                // Tundra
+                // Tropical
                 else if (currTile.GetBiome() == 3)
                 {
                     // Flat Tile
-                    baseTilemap.SetTile(new Vector3Int(y, x, 0), tundraTile);
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), tropicalTile);
 
                     // Hills
                     if (currTile.GetTerrain() == 1)
@@ -731,11 +732,11 @@ public class Director : MonoBehaviour
 
                     //tile.color = new Color32(144, 158, 141, 255);
                 }
-                // Desert
+                // Tundra
                 else if (currTile.GetBiome() == 4)
                 {
                     // Flat Tile
-                    baseTilemap.SetTile(new Vector3Int(y, x, 0), desertTile);
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), tundraTile);
 
                     // Hills
                     if (currTile.GetTerrain() == 1)
@@ -745,11 +746,11 @@ public class Director : MonoBehaviour
 
                     //tile.color = new Color32(255, 217, 112, 255);
                 }
-                // Snow
+                // Arid PLains
                 else if (currTile.GetBiome() == 5)
                 {
                     // Flat Tile
-                    baseTilemap.SetTile(new Vector3Int(y, x, 0), snowTile);
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), coastTile);
 
                     // Hills
                     if (world.GetTile(x, y).GetTerrain() == 1)
@@ -758,16 +759,22 @@ public class Director : MonoBehaviour
                     }
                     //tile.color = Color.white;
                 }
-                // Coast
+                // Desert
                 else if (currTile.GetBiome() == 6)
                 {
-                    baseTilemap.SetTile(new Vector3Int(y, x, 0), coastTile);
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), desertTile);
                     //tile.color = new Color32(110, 187, 255, 255);
                 }
-                // Ocean
+                // Coast
                 else if (currTile.GetBiome() == 7)
                 {
-                    baseTilemap.SetTile(new Vector3Int(y, x, 0), oceanTile);
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), aridPlainsTile);
+                    //tile.color = new Color32(20, 102, 184, 255);
+                }
+                // Ocean
+                else if (currTile.GetBiome() == 8)
+                {
+                    baseTilemap.SetTile(new Vector3Int(y, x, 0), aridPlainsTile);
                     //tile.color = new Color32(20, 102, 184, 255);
                 }
 
